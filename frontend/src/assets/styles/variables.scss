@@ -1,0 +1,41 @@
+:root {
+    // Colors
+    --palette-white: #ffffff;
+    --palette-dark: #111111;
+    --palette-hot: #db5566;
+    --palette-hot--hover: #df6a78;
+    --palette-hot--active: #c04b59;
+
+    --palette-sunny: #f4ad49;
+    --palette-sunny--hover: #f5b75f;
+    --palette-sunny--active: #d69840;
+
+    --palette-fresh: #51bf87;
+    --palette-fresh--hover: #66c796;
+    --palette-fresh--active: #47a877;
+
+    --palette-sky: #0bacd3;
+    --palette-sky--hover: #29b6d8;
+    --palette-sky--active: #0a97b9;
+
+    --palette-btn-shadow: #888888;
+
+    // Spaces
+    --m-space-16: clamp(12px, 0.83vw, 16px);
+    --m-space-32: clamp(24px, 1.67vw, 32px);
+    --m-space-48: clamp(36px, 2.50vw, 48px);
+    --m-space-64: clamp(48px, 3.33vw, 64px);
+    --m-space-80: clamp(60px, 4.17vw, 80px);
+    --m-space-96: clamp(72px, 5.00vw, 96px);
+    --m-space-100: clamp(75px, 5.21vw, 100px);
+
+    --f-family: 'Inter', sans-serif;
+
+    --fs-heading-1: clamp(24px, 3.5vw, 72px); 
+    --fs-heading-2: clamp(22px, 2.9vw, 60px);  
+    --fs-heading-3: clamp(20px, 2.2vw, 48px);   
+    --fs-heading-4: clamp(18px, 1.8vw, 36px); 
+    --fs-body: clamp(16px, 1vw, 20px);          
+    --fs-button: clamp(16px, 0.8vw, 18px);
+
+}
