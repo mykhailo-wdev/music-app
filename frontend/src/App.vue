@@ -1,11 +1,12 @@
 <template>
-  <div id="app">
-    <h1>Vue + PHP + MySQL (Docker)ііццц</h1>
-    <button @click="loadUsers">Donw 222ііss</button>
-    <ul>
-      <li v-for="user in users" :key="user.id">{{ user.name }}</li>
-    </ul>
-  </div>
+    <div class="container">
+        <h1>Vue + PHP + MySQL (Docker)ііццц</h1>
+        <p>Vasya</p>
+        <button @click="loadUsers">Donw 222sss</button>
+        <ul>
+            <li v-for="user in users" :key="user.id">{{ user.name }}</li>
+        </ul>
+    </div>
 </template>
 
 <script>
@@ -28,3 +29,9 @@ export default {
   }
 };
 </script>
+
+<style lang="scss" scoped>
+li {
+    list-style: square;
+}
+</style>

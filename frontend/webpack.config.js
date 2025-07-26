@@ -1,5 +1,6 @@
 const path = require("path");
 const { VueLoaderPlugin } = require("vue-loader");
+const webpack = require("webpack");
 
 module.exports = {
   entry: "./src/main.js",
@@ -11,39 +12,44 @@ module.exports = {
     rules: [
       {
         test: /\.vue$/,
-        loader: "vue-loader"
+        loader: "vue-loader",
       },
       {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
-          loader: "babel-loader"
-        }
+          loader: "babel-loader",
+        },
       },
       {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"]
-      }
-    ]
+        test: /\.s[ac]ss$/i,
+        use: ["style-loader", "css-loader", "sass-loader"],
+      },
+    ],
   },
   resolve: {
     alias: {
-      vue: "vue/dist/vue.esm-bundler.js"
+      vue: "vue/dist/vue.esm-bundler.js",
     },
-    extensions: [".js", ".vue", ".json"]
+    extensions: [".js", ".vue", ".json"],
   },
   devServer: {
-    static: './public',
+    static: "./public",
     port: 5173,
     hot: true,
-    host: '0.0.0.0',
-    watchFiles: ['src/**/*'],
-    allowedHosts: 'all',
-  client: {
-    webSocketURL: 'ws://localhost:5173/ws',
-  }
+    host: "0.0.0.0",
+    watchFiles: ["src/**/*"],
+    allowedHosts: "all",
+    client: {
+      webSocketURL: "ws://localhost:5173/ws",
+    },
   },
   plugins: [
-    new VueLoaderPlugin()
-  ]
+    new VueLoaderPlugin(),
+    new webpack.DefinePlugin({
+      __VUE_OPTIONS_API__: true,
+      __VUE_PROD_DEVTOOLS__: false,
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
+    }),
+  ],
 };
