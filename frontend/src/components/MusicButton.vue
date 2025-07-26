@@ -1,5 +1,5 @@
 <template>
-    <button :class="['btn', typeBtn]" @click="action">{{ text }}</button>
+    <button :class="['btn', typeBtn]" @click="action" type="btn">{{ text }}</button>
 </template>
 
 <script setup>
@@ -25,68 +25,73 @@ function action() {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .btn {
     cursor: pointer;
     display: inline-block;
     height: 40px;
-    padding: 0 32px;
-    font-size: 18px;
+    font-family: var(--f-family);
+    padding: 0 var(--m-space-32);
+    font-size: var(--fs-button);
     font-weight: 400;
     line-height: 40px;
-    color: #ffffff;
+    color: var(--palette-white);
     border-radius: 8px;
-    box-shadow: 1px 1px 5px #888888;
+    box-shadow: 1px 1px 5px var(--palette-btn-shadow);
     transition: all 0.3s ease-in-out;
 }
 
 .btn-hot {
-    background-color: #db5566;
+    background-color: var(--palette-hot);
     &:hover {
-        color: #fff;
-        background-color: #df6a78;
+        color: var(--palette-white);
+        background-color: var(--palette-hot--hover);
     }
     &:active {
-        color: #fff;
-        background-color: #c04b59;
+        color: var(--palette-white);
+        background-color: var(--palette-hot--active);
     }
 }
 
 .btn-sunny {
-    background-color: #f4ad49;
+    background-color: var(--palette-sunny);
     &:hover {
-        color: #fff;
-        background-color: #f5b75f;
+        color: var(--palette-white);
+        background-color: var(--palette-sunny--hover);
     }
     &:active {
-        color: #fff;
-        background-color: #d69840;
+        color: var(--palette-white);
+        background-color: var(--palette-sunny--active);
     }
 }
 
 .btn-fresh {
-    background-color: #51bf87;
+    background-color: var(--palette-fresh);
     &:hover {
-        color: #fff;
-        background-color: #66c796;
+        color: var(--palette-white);
+        background-color: var(--palette-fresh--hover);
     }
     &:active {
-        color: #fff;
-        background-color: #47a877;
+        color: var(--palette-white);
+        background-color: var(--palette-fresh--active);
     }
 }
 
 .btn-sky {
-    background-color: #0bacd3;
+    background-color: var(--palette-sky);
     &:hover {
-        color: #fff;
-        background-color: #29b6d8;
+        color: var(--palette-white);
+        background-color: var(--palette-sky--hover);
     }
     &:active {
-        color: #fff;
-        background-color: #0a97b9;
+        color: var(--palette-white);
+        background-color: var(--palette-sky--active);
     }
 }
 
+.btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
 
 </style>
