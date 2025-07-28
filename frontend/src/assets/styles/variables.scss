@@ -1,6 +1,7 @@
 :root {
     // Colors
     --palette-white: #ffffff;
+    --palette-light: #f1f1f1;
     --palette-dark: #111111;
     --palette-hot: #db5566;
     --palette-hot--hover: #df6a78;
@@ -19,6 +20,7 @@
     --palette-sky--active: #0a97b9;
 
     --palette-btn-shadow: #888888;
+    --palette-violet: #c6b7d4;
 
     // Spaces
     --m-space-16: clamp(12px, 0.83vw, 16px);

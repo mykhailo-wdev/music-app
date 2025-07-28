@@ -25,11 +25,16 @@ module.exports = {
         test: /\.s[ac]ss$/i,
         use: ["style-loader", "css-loader", "sass-loader"],
       },
+      {
+        test: /\.(png|jpe?g|gif|svg|webp)$/i,
+        type: 'asset/resource',
+      }
     ],
   },
   resolve: {
     alias: {
-      vue: "vue/dist/vue.esm-bundler.js",
+        '@': path.resolve(__dirname, 'src'), 
+        vue: "vue/dist/vue.esm-bundler.js",
     },
     extensions: [".js", ".vue", ".json"],
   },
