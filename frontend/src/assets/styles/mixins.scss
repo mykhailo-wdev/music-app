@@ -3,7 +3,7 @@
 @mixin text-h1 {
     font-family: var(--f-family);
     font-size: var(--fs-heading-1);
-    line-height: 100%;
+    line-height: 130%;
     font-weight: 700;
     color: var(--palette-dark);
     text-wrap: balance;
@@ -12,7 +12,7 @@
 @mixin text-h2 {
     font-family: var(--f-family);
     font-size: var(--fs-heading-2);
-    line-height: 100%;
+    line-height: 130%;
     font-weight: 600;
     color: var(--palette-dark);
     text-wrap: balance;
@@ -21,7 +21,7 @@
 @mixin text-h3 {
     font-family: var(--f-family);
     font-size: var(--fs-heading-3);
-    line-height: 100%;
+    line-height: 130%;
     font-weight: 500;
     color: var(--palette-dark);
     text-wrap: balance;
@@ -30,7 +30,7 @@
 @mixin text-h4 {
     font-family: var(--f-family);
     font-size: var(--fs-heading-4);
-    line-height: 100%;
+    line-height: 130%;
     font-weight: 500;
     color: var(--palette-dark);
     text-wrap: balance;
@@ -39,7 +39,7 @@
 @mixin body-text {
     font-family: var(--f-family);
     font-size: var(--fs-body);
-    line-height: 100%;
+    line-height: 120%;
     font-weight: 400;
     color: var(--palette-dark);
     text-wrap: balance;
