@@ -2,12 +2,17 @@
     <header class="header-wrap">
         <div class="container">
             <div class="header-row">
-                <div class="header-logo">
-                    <img :src="require('@/assets/images/logo.svg')" alt="Logo">
+                <div class="header-logo" v-if="route.path === '/'">
+                    <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60">
+                </div>
+                <div v-else class="header-logo">
+                    <router-link to="/">
+                        <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60">
+                    </router-link>
                 </div>
                 <div class="header-btns">
-                    <music-button type-btn="btn-fresh" text="Вхід"></music-button>
-                    <music-button type-btn="btn-sky" text="Реєстрація"></music-button>
+                    <music-button type-btn="btn-fresh" text="Вхід" to="/login"></music-button>
+                    <music-button type-btn="btn-sky" text="Реєстрація" to="/register"></music-button>
                 </div>
             </div>
         </div>
@@ -16,6 +21,10 @@
 
 <script setup>
 import MusicButton from './MusicButton.vue';
+import { useRouter, useRoute } from 'vue-router';
+
+const router = useRouter();
+const route = useRoute();
 
 </script>
 

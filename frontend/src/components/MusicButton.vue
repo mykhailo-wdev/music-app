@@ -1,5 +1,17 @@
 <template>
-    <button :class="['btn', typeBtn]" @click="action" type="btn">{{ text }}</button>
+    <router-link v-if="to" :to="to" custom v-slot="{ navigate, href, isExactActive }">
+        <a
+            :href="href"
+            :class="['btn', typeBtn]"
+            @click="navigate"
+            :aria-current="isExactActive ? 'page' : null"
+            >
+            {{ text }}
+        </a>
+    </router-link>
+    <button v-else :class="['btn', typeBtn]" @click="action" type="button">
+        {{ text }}
+    </button>
 </template>
 
 <script setup>
@@ -17,7 +29,11 @@ const props = defineProps({
         type: String,
         required: false,
         default: 'Click'
-    }
+    },
+    to: {
+        type: [String, Object],
+        required: false,
+    },
 })
 
 function action() {
