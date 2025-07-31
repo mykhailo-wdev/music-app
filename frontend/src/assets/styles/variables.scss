@@ -1,8 +1,11 @@
 :root {
-    // Colors
+    /* Main colors */
     --palette-white: #ffffff;
     --palette-light: #f1f1f1;
     --palette-dark: #111111;
+    --palette-black: #000000;
+
+
     --palette-hot: #db5566;
     --palette-hot--hover: #df6a78;
     --palette-hot--active: #c04b59;
@@ -21,6 +24,14 @@
 
     --palette-btn-shadow: #888888;
     --palette-violet: #c6b7d4;
+    --palette-stroke: #cccccc;
+
+    --palette-red: #ff3c3c;
+    --palette-darkred: #ab0000;
+    --palette-lightred: #ff0000;
+    --palette-violet: #8400ff;
+    --palette-darkviolet: #3c0074;
+
 
     // Spaces
     --m-space-16: clamp(12px, 0.83vw, 16px);
@@ -39,5 +50,6 @@
     --fs-heading-4: clamp(18px, 1.8vw, 36px); 
     --fs-body: clamp(16px, 1vw, 20px);          
     --fs-button: clamp(16px, 0.8vw, 18px);
+    --fs-small: clamp(12px, 1vw, 14px);
 
 }

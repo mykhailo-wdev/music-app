@@ -1,22 +1,15 @@
 <template>
     <main class="main-app">
         <div class="container">
-            <music-button type-btn="btn-hot" text="Click"></music-button>
-
-            <music-button  type-btn="btn-fresh" text="Click"></music-button>
-
-            <music-button  type-btn="btn-sunny" text="Click"></music-button>
-
-            <music-button  type-btn="btn-sky" text="Click"></music-button>
-
-            <img :src="require('@/assets/images/screenshot.png')" alt="Скріншот">
-
+            <h3>Введіть назву пісні, щоб прослухати її</h3>
+            <music-search></music-search>
         </div>
     </main>
 </template>
 
 <script setup>
 import MusicButton from '@/components/MusicButton.vue';
+import MusicSearch from '@/components/MusicSearch.vue';
 
 </script>
 
@@ -25,6 +18,10 @@ import MusicButton from '@/components/MusicButton.vue';
     height: calc(100vh - 100px);
     height: calc(100dvh - 100px);
     padding: var(--m-space-80) 0;
+
+    h3 {
+        text-align: center;
+    }
 }
 @media (max-width: 576px) {
     .main-app {

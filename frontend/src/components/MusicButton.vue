@@ -9,7 +9,7 @@
             {{ text }}
         </a>
     </router-link>
-    <button v-else :class="['btn', typeBtn]" @click="action" type="button">
+    <button v-else :class="['btn', typeBtn]" @click="action" type="button" :disabled="disabled">
         {{ text }}
     </button>
 </template>
@@ -34,6 +34,10 @@ const props = defineProps({
         type: [String, Object],
         required: false,
     },
+    disabled: {
+        type: Boolean,
+        default: false
+    }
 })
 
 function action() {
