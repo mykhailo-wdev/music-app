@@ -59,6 +59,7 @@ function action() {
     border-radius: 8px;
     box-shadow: 1px 1px 5px var(--palette-btn-shadow);
     transition: all 0.3s ease-in-out;
+    text-align: center;
 }
 
 .btn-hot {

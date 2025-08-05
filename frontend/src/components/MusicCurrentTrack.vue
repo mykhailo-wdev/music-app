@@ -96,6 +96,8 @@ watch(currentSong, () => {
 });
 
 
+
+
 const formattedTime = (sec) => {
     const minutes = Math.floor(sec / 60);
     const seconds = Math.floor(sec % 60);
@@ -117,20 +119,26 @@ const togglePlay = () => {
 };
 
 const updateTime = () => {
+    if (!audio.value) return;
     currentTime.value = audio.value.currentTime;
 };
 
 const seekAudio = () => {
+    if (!audio.value) return;
     audio.value.currentTime = currentTime.value;
 };
 
 const updateVolume = () => {
+    if (!audio.value) return;
     audio.value.volume = volume.value;
 };
 
 const loadMetadata = () => {
+    if (!audio.value) return;
     duration.value = audio.value.duration;
+    audio.value.volume = volume.value;
 };
+
 
 
 </script>

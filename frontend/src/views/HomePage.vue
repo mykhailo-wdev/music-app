@@ -2,7 +2,7 @@
     <main class="main-app">
         <div class="container">
             <h3>Введіть назву пісні, щоб прослухати її</h3>
-            <music-search></music-search>
+            <music-search :search-limit="2"></music-search>
         </div>
     </main>
 </template>
