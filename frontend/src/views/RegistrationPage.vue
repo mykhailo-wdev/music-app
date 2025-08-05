@@ -5,6 +5,16 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
+import { useStore } from 'vuex';
+const showAlert = ref(false);
+const store = useStore();
+
+
+onMounted(() => {
+    store.commit('resetSearchCount');
+});
+
 
 </script>
 

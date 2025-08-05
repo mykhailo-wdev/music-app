@@ -8,16 +8,14 @@
             </transition>
         </router-view>
 
-
     </div>
     
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, watch  } from 'vue';
 import MusicHeader from './components/MusicHeader.vue';
-
-
+import MusicAlert from './components/MusicAlert.vue';
 </script>
 
 <!-- <script>
@@ -60,4 +58,5 @@ export default {
     overflow: hidden;
     background-color: var(--palette-white);
 }
+
 </style>

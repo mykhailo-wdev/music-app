@@ -1,5 +1,13 @@
 <template>
     <div class="search-wrap">
+        <transition name="slide-fade">
+            <music-alert
+                v-if="showAlert"
+                alertTitle="Ліміт вичерпано"
+                alertDescription="Будь ласка, зараєструйтесь, щоб користуватись безлімітним пошуком. А також отримати більше спектр можливостей"
+                @close="closeAlert"
+            ></music-alert>
+        </transition>
         <div class="search-row">
             <input 
                 class="search-text" 
@@ -39,6 +47,7 @@
 <script setup>
 import MusicButton from './MusicButton.vue';
 import MusicCurrentTrack from './MusicCurrentTrack.vue';
+import MusicAlert from './MusicAlert.vue';
 import { useStore } from 'vuex';
 import { ref, watch, computed } from 'vue';
 
@@ -49,6 +58,13 @@ const highlightedIndex = ref(-1);
 const isDropdownVisible = ref(false);
 const isLoading = ref(false);
 const isSongSelected = ref(false);
+
+const props = defineProps({
+  searchLimit: {
+    type: Number,
+    default: 3
+  }
+});
 
 const songs = computed(() => store.getters.songMatch);
 const currentSong = computed(() => store.getters.currentSong);
@@ -80,20 +96,37 @@ const searchMusic = async () => {
         isLoading.value = true;
         store.commit('getInputValue', searchValue.value);
         await store.dispatch('fetchSongs');
+        
+        store.commit('calculateSearch');
+
+        if (count.value >= props.searchLimit) {
+            showAlert.value = true;
+            isLoading.value = false;
+            return;
+        }
+
         isLoading.value = false;
         isDropdownVisible.value = songs.value.length > 0;
         highlightedIndex.value = -1;
     }
 };
 
+
 const selectSong = (song) => {
+    if (count.value >= props.searchLimit) {
+        showAlert.value = true;
+        return;
+    }
+
+    store.commit('calculateSearch');
+
     searchValue.value = `${song.name} – ${song.artist_name}`;
     store.commit('setCurrentSong', song);
     isDropdownVisible.value = false;
     isSongSelected.value = true;
-    searchValue.value = ''
-    
+    searchValue.value = '';
 };
+
 
 const highlightNext = () => {
     if (highlightedIndex.value < songs.value.length - 1) {
@@ -112,6 +145,22 @@ const selectHighlighted = () => {
         selectSong(songs.value[highlightedIndex.value]);
     }
 };
+
+const showAlert = ref(false);
+const count = computed(() => store.getters.countSearch);
+
+watch(count, (newVal) => {
+  if (newVal >= props.searchLimit) {
+    showAlert.value = true;
+  }
+});
+
+function closeAlert() {
+  showAlert.value = false;
+}
+
+
+
 </script>
 
 <style lang="scss" scoped>

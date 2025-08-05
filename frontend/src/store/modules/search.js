@@ -7,7 +7,8 @@ export default {
         return {
             searchValue: '',
             songs: [],
-            currentSong: null
+            currentSong: null,
+            contSearch: Number(localStorage.getItem('contSearch')) || 0,
         }
     },
     actions: {
@@ -33,7 +34,15 @@ export default {
         },
         setCurrentSong(state, song) {  
             state.currentSong = song
-        }
+        },
+        calculateSearch(state) {
+            state.contSearch++;
+            localStorage.setItem('contSearch', state.contSearch);
+        },
+        resetSearchCount(state) {
+            state.contSearch = 0;
+            localStorage.removeItem('contSearch');
+        },
     },
 
     getters: {
@@ -42,6 +51,9 @@ export default {
         },
         currentSong(state) {
             return state.currentSong;
+        },
+        countSearch(state) {
+            return state.contSearch
         }
     },
 }
