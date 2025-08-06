@@ -15,19 +15,8 @@ import MusicSearch from '@/components/MusicSearch.vue';
 
 <style lang="scss" scoped>
 .main-app {
-    height: calc(100vh - 100px);
-    height: calc(100dvh - 100px);
-    padding: var(--m-space-80) 0;
-
     h3 {
         text-align: center;
-    }
-}
-@media (max-width: 576px) {
-    .main-app {
-        height: calc(100vh - 120px);
-        height: calc(100dvh - 120px);
-        padding: var(--m-space-32) 0;
     }
 }
 </style>
