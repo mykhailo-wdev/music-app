@@ -4,7 +4,7 @@
             <h1>Login Page</h1>
             <p class="body-text">
                 Якщо Ви забули пароль перейдіть за 
-                <router-link class="forget-link" to="/recover-password">посиланням</router-link>
+                <router-link class="forget-link" to="/recover-password" text="посиланням"></router-link>
             </p>
         </div>
     </main>

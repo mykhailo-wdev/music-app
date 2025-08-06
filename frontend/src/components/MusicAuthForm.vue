@@ -1,0 +1,262 @@
+<template>
+    <div class="auth-form">
+        <h2 v-if="mode === 'login'">Вхід</h2>
+        <h2 v-else-if="mode === 'register'">Реєстрація</h2>
+        <h2 v-else-if="mode === 'forgot'">Відновлення паролю</h2>
+
+        <form @submit.prevent="handleSubmit" autocomplete="on">
+        <!-- Для реєстрації додаткові поля -->
+        <div v-if="mode === 'register'" class="form-group">
+            <label for="name">Ім'я</label>
+            <input v-model="formData.name" id="name" type="text" required  placeholder="Введіть Ваше Ім'я" />
+            <small v-if="errors.name" class="error-text">{{ errors.name }}</small>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input v-model="formData.email" id="email" type="email" required placeholder="Введіть Вашу електронну пошту" />
+            <small v-if="errors.email" class="error-text">{{ errors.email }}</small>
+        </div>
+
+        <div v-if="mode !== 'forgot'" class="form-group">
+            <label for="password">Пароль</label>
+            <input 
+                v-model="formData.password" 
+                :type="showPassword ? 'text' : 'password'" 
+                id="password"  
+                class="password-visible" 
+                required 
+                placeholder="Введіть Пароль" 
+            />
+            <button type="button" class="toggle-pass" aria-label="Show password" @click="showPassword = !showPassword">
+                <svg v-if="showPassword" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg v-else class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+            </button>
+            <small v-if="errors.password" class="error-text">{{ errors.password }}</small>
+        </div>
+
+        <div v-if="mode === 'register'" class="form-group">
+            <label for="passwordConfirm">Підтвердити пароль</label>
+            <input 
+                v-model="formData.passwordConfirm" 
+                id="passwordConfirm" 
+                class="password-visible" 
+                :type="showPasswordConfirm ? 'text' : 'password'" 
+                required  
+                placeholder="Повторіть пароль"
+            />
+            <button type="button" class="toggle-pass" aria-label="Show password Confirm" @click="showPasswordConfirm = !showPasswordConfirm">
+                <svg v-if="showPasswordConfirm" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg v-else class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+            </button>
+            <small v-if="errors.passwordConfirm" class="error-text">{{ errors.passwordConfirm }}</small>
+        </div>
+
+        <music-button 
+            type-btn="btn-sky" 
+            :text="submitText"  
+            @action="handleSubmit"
+        ></music-button>
+
+        </form>
+
+        <!-- Додаткові посилання -->
+        <div class="auth-links" v-if="mode === 'login'">
+            <router-link 
+                class="forget-link" 
+                to="/recover-password" 
+                text="Забули пароль?"
+            >
+            </router-link>
+            <router-link 
+                class="register-link" 
+                to="/register"
+                text="Реєстрація"    
+            >
+            </router-link>
+        </div>
+        <div 
+            class="auth-links" 
+            v-else-if="mode === 'register'"
+            >
+            <router-link 
+                class="login-link" 
+                to="/login"
+                text="Вже є акаунт? Увійти"   
+            >
+            </router-link>
+        </div>
+
+        <div class="auth-links" 
+            v-else-if="mode === 'forgot'"
+        >
+            <router-link 
+                class="login-link" 
+                to="/login"
+                text="Назад до входу"  
+            >
+            </router-link>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import MusicButton from './MusicButton.vue';
+import { ref, reactive, computed } from 'vue';
+const showPassword = ref(false);
+const showPasswordConfirm = ref(false);
+
+
+const props = defineProps({
+    mode: {
+        type: String,
+        default: 'login', // 'login' | 'register' | 'forgot'
+    }
+})
+
+const emit = defineEmits(['change-mode'])
+
+const formData = reactive({
+    name: '',
+    email: '',
+    password: '',
+    passwordConfirm: ''
+})
+
+const errors = reactive({
+    name: '',
+    email: '',
+    password: '',
+    passwordConfirm: ''
+});
+
+
+function validateForm() {
+    let isValid = true;
+    Object.keys(errors).forEach(key => errors[key] = '');
+
+    if (props.mode === 'register' && !formData.name.trim()) {
+        errors.name = 'Введіть ім’я';
+        isValid = false;
+    }
+
+    if (!formData.email.trim()) {
+        errors.email = 'Введіть email';
+        isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        errors.email = 'Невірний формат email';
+        isValid = false;
+    }
+
+    if (props.mode !== 'forgot') {
+        if (!formData.password) {
+            errors.password = 'Введіть пароль';
+            isValid = false;
+        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/.test(formData.password)) {
+            errors.password = 'Пароль має містити мінімум 8 символів, велику і малу літеру, цифру та спецсимвол';
+            isValid = false;
+        }
+    }
+
+
+    if (props.mode === 'register') {
+        if (!formData.passwordConfirm) {
+            errors.passwordConfirm = 'Підтвердіть пароль';
+            isValid = false;
+        } else if (formData.password !== formData.passwordConfirm) {
+            errors.passwordConfirm = 'Паролі не збігаються';
+            isValid = false;
+        }
+    }
+
+    return isValid;
+}
+
+function handleSubmit() {
+    if (!validateForm()) return;
+
+    if (props.mode === 'login') {
+        console.log('Вхід з даними', formData);
+    } else if (props.mode === 'register') {
+        console.log('Реєстрація з даними', formData);
+    } else if (props.mode === 'forgot') {
+        console.log('Відновлення паролю для', formData.email);
+    }
+}
+
+const submitText = computed(() => {
+    switch (props.mode) {
+        case 'login': return 'Увійти';
+        case 'register': return 'Зареєструватись';
+        case 'forgot': return 'Відновити пароль';
+        default: return 'Надіслати';
+    }
+});  
+</script>
+
+<style lang="scss" scoped>
+@use '../assets/styles/mixins';
+.auth-form {
+    max-width: 576px;
+    margin: 0 auto;
+}
+.form-group {
+    margin-bottom: var(--m-space-16);
+    position: relative;
+}
+label {
+    display: block;
+    @include mixins.body-text();
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+input {
+    @include mixins.body-text();
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    &:focus::-webkit-input-placeholder {
+        color: transparent;
+    }
+    &:focus::-moz-placeholder {
+        color: transparent;
+    }
+    &:focus:-moz-placeholder {
+        color: transparent;
+    }
+    &:focus:-ms-input-placeholder {
+        color: transparent;
+    }
+}
+.auth-links {
+    margin-top: var(--m-space-16);
+}
+.toggle-pass {
+    cursor: pointer;
+    position: absolute;
+    right: 16px;
+    top: 30px;
+}
+.error-text {
+    @include mixins.text-small();
+    color: var(--palette-red);
+    margin-top: 4px;
+    display: block;
+}
+
+</style>
