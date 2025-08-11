@@ -37,6 +37,7 @@ export default {
             state.status = null;
             state.error = null;
             localStorage.removeItem('token');
+            localStorage.removeItem('refresh_token'); 
         }
     },
 
@@ -63,11 +64,21 @@ export default {
             commit('setError', null);
             try {
                 const res = await axios.post(`${API_BASE_URL}/login.php`, payload);
+
+                console.log('Server response:', res.data);
+
                 if (res.data.status === 'success') {
                     commit('setStatus', 'success');
                     commit('setUser', res.data.user || payload.email);
-                    commit('setToken', res.data.token);
-                    localStorage.setItem('token', res.data.token);
+
+                    console.log('Before saving token:', res.data.access_token, res.data.refresh_token);
+
+                    commit('setToken', res.data.access_token);
+                    localStorage.setItem('token', res.data.access_token);
+                    localStorage.setItem('refresh_token', res.data.refresh_token);
+
+                    console.log('After saving token:', localStorage.getItem('token'), localStorage.getItem('refresh_token'));
+
                 } else {
                     commit('setStatus', 'error');
                     commit('setError', res.data.message);
@@ -81,13 +92,14 @@ export default {
 
         async logout({ commit, state }) {
             try {
-                await axios.post(`${API_BASE_URL}/logout.php`, {}, {
+            await axios.post(`${API_BASE_URL}/logout.php`, {
+                refresh_token: localStorage.getItem('refresh_token')
+            }, {
                 headers: {
-                    Authorization: `Bearer ${state.token}`
+                Authorization: `Bearer ${state.token}`
                 }
-                });
+            });
             } catch (error) {
-                // можеш обробити помилку або просто ігнорувати
             }
             commit('logout');
         }
