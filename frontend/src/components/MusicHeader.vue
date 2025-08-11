@@ -11,7 +11,8 @@
                     </router-link>
                 </div>
                 <div class="header-btns">
-                    <music-button type-btn="btn-fresh" text="Вхід" to="/login"></music-button>
+                    <music-button type-btn="btn-fresh" text="Вихід" @click="logout" v-if="isOnPlayerRoute"></music-button>
+                    <music-button v-else type-btn="btn-fresh" text="Вхід" to="/login"></music-button>
                     <music-button type-btn="btn-sky" text="Реєстрація" to="/register"></music-button>
                 </div>
             </div>
@@ -22,9 +23,21 @@
 <script setup>
 import MusicButton from './MusicButton.vue';
 import { useRouter, useRoute } from 'vue-router';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
 const router = useRouter();
 const route = useRoute();
+const store = useStore();
+
+const isOnPlayerRoute = computed(() => {
+  return route.path.startsWith('/player');
+});
+
+function logout() {
+  store.dispatch('logout');
+  router.push('/login');
+}
 
 </script>
 
