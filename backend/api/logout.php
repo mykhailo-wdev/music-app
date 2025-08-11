@@ -14,6 +14,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
+// Отримуємо Authorization header
 $headers = getallheaders();
 $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 
@@ -24,15 +25,37 @@ if (!$authHeader || !preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
 }
 
 $jwt = $matches[1];
-$secret_key = "aD8SZNhKlC5McZBe2sac2YDdZ6JN7un0OJTULKgJ35w="; 
+$secret_key = "aD8SZNhKlC5McZBe2sac2YDdZ6JN7un0OJTULKgJ35w=";
+
+// Отримуємо refresh token із тіла запиту
+$data = json_decode(file_get_contents("php://input"), true);
+$refresh_token = $data['refresh_token'] ?? '';
+
+if (!$refresh_token) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Refresh token не надано']);
+    exit;
+}
 
 try {
+    // Декодуємо access token
     $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
     $userId = $decoded->data->id;
 
+    // Оновлюємо час останнього логауту
     $stmt = $mysqli->prepare("UPDATE users SET last_logout_at = NOW() WHERE id = ?");
     $stmt->bind_param("i", $userId);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        error_log("Failed to update last_logout_at: " . $stmt->error);
+    }
+    $stmt->close();
+
+    // Видаляємо конкретний refresh token (інвалідовуємо сесію)
+    $stmt = $mysqli->prepare("DELETE FROM refresh_tokens WHERE user_id = ? AND token = ?");
+    $stmt->bind_param("is", $userId, $refresh_token);
+    if (!$stmt->execute()) {
+        error_log("Failed to delete refresh token: " . $stmt->error);
+    }
     $stmt->close();
 
     echo json_encode(['status' => 'success', 'message' => 'Вихід виконано']);
