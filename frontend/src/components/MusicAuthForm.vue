@@ -4,119 +4,138 @@
         <h2 v-else-if="mode === 'register'">Реєстрація</h2>
         <h2 v-else-if="mode === 'forgot'">Відновлення паролю</h2>
 
-        <form @submit.prevent="handleSubmit" autocomplete="on">
-        <!-- Для реєстрації додаткові поля -->
-        <div v-if="mode === 'register'" class="form-group">
-            <label for="name">Ім'я</label>
-            <input v-model="formData.name" id="name" type="text" required  placeholder="Введіть Ваше Ім'я" />
-            <small v-if="errors.name" class="error-text">{{ errors.name }}</small>
-        </div>
+        <div v-if="!isLoading && !showSuccessMessage">
+            <form  @submit.prevent="handleSubmit" autocomplete="on">
+                <div v-if="mode === 'register'" class="form-group">
+                    <label for="name">Ім'я</label>
+                    <input v-model="formData.name" id="name" type="text" required placeholder="Введіть Ваше Ім'я"  max="10"/>
+                    <small v-if="errors.name" class="error-text">{{ errors.name }}</small>
+                </div>
 
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input v-model="formData.email" id="email" type="email" required placeholder="Введіть Вашу електронну пошту" />
-            <small v-if="errors.email" class="error-text">{{ errors.email }}</small>
-        </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input v-model="formData.email" id="email" type="email" required placeholder="Введіть Вашу електронну пошту" max="50"/>
+                    <small v-if="errors.email" class="error-text">{{ errors.email }}</small>
+                </div>
 
-        <div v-if="mode !== 'forgot'" class="form-group">
-            <label for="password">Пароль</label>
-            <input 
-                v-model="formData.password" 
-                :type="showPassword ? 'text' : 'password'" 
-                id="password"  
-                class="password-visible" 
-                required 
-                placeholder="Введіть Пароль" 
-            />
-            <button type="button" class="toggle-pass" aria-label="Show password" @click="showPassword = !showPassword">
-                <svg v-if="showPassword" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <svg v-else class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                        <line x1="1" y1="1" x2="23" y2="23"></line>
-                </svg>
-            </button>
-            <small v-if="errors.password" class="error-text">{{ errors.password }}</small>
-        </div>
+                <div v-if="mode !== 'forgot'" class="form-group">
+                    <label for="password">Пароль</label>
+                    <input 
+                        v-model="formData.password" 
+                        :type="showPassword ? 'text' : 'password'" 
+                        id="password"  
+                        class="password-visible" 
+                        required 
+                        placeholder="Введіть Пароль" 
+                        max="50"
+                    />
+                    <button type="button" class="toggle-pass" aria-label="Show password" @click="showPassword = !showPassword">
+                        <svg v-if="showPassword" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg v-else class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                    <small v-if="errors.password" class="error-text">{{ errors.password }}</small>
+                </div>
 
-        <div v-if="mode === 'register'" class="form-group">
-            <label for="passwordConfirm">Підтвердити пароль</label>
-            <input 
-                v-model="formData.passwordConfirm" 
-                id="passwordConfirm" 
-                class="password-visible" 
-                :type="showPasswordConfirm ? 'text' : 'password'" 
-                required  
-                placeholder="Повторіть пароль"
-            />
-            <button type="button" class="toggle-pass" aria-label="Show password Confirm" @click="showPasswordConfirm = !showPasswordConfirm">
-                <svg v-if="showPasswordConfirm" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <svg v-else class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                        <line x1="1" y1="1" x2="23" y2="23"></line>
-                </svg>
-            </button>
-            <small v-if="errors.passwordConfirm" class="error-text">{{ errors.passwordConfirm }}</small>
-        </div>
+                <div v-if="mode === 'register'" class="form-group">
+                    <label for="passwordConfirm">Підтвердити пароль</label>
+                    <input 
+                        v-model="formData.passwordConfirm" 
+                        id="passwordConfirm" 
+                        class="password-visible" 
+                        :type="showPasswordConfirm ? 'text' : 'password'" 
+                        required  
+                        placeholder="Повторіть пароль"
+                        max="50"
+                    />
+                    <button type="button" class="toggle-pass" aria-label="Show password Confirm" @click="showPasswordConfirm = !showPasswordConfirm">
+                        <svg v-if="showPasswordConfirm" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg v-else class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                    <small v-if="errors.passwordConfirm" class="error-text">{{ errors.passwordConfirm }}</small>
+                </div>
 
-        <music-button 
-            type-btn="btn-sky" 
-            :text="submitText"  
-            @action="handleSubmit"
-        ></music-button>
+                <music-button 
+                    type-btn="btn-sky" 
+                    :text="submitText"  
+                    @action="handleSubmit"
+                ></music-button>
 
-        </form>
+            </form>
 
-        <!-- Додаткові посилання -->
-        <div class="auth-links" v-if="mode === 'login'">
-            <router-link 
-                class="forget-link" 
-                to="/recover-password" 
-                text="Забули пароль?"
+            <div class="auth-links" v-if="mode === 'login'">
+                <router-link 
+                    class="forget-link" 
+                    to="/recover-password" 
+                    text="Забули пароль?"
+                >
+                </router-link>
+                <router-link 
+                    class="register-link" 
+                    to="/register"
+                    text="Реєстрація"    
+                >
+                </router-link>
+            </div>
+            <div 
+                class="auth-links" 
+                v-else-if="mode === 'register'"
+                >
+                <router-link 
+                    class="login-link" 
+                    to="/login"
+                    text="Вже є акаунт? Увійти"   
+                >
+                </router-link>
+            </div>
+
+            <div class="auth-links" 
+                v-else-if="mode === 'forgot'"
             >
-            </router-link>
-            <router-link 
-                class="register-link" 
-                to="/register"
-                text="Реєстрація"    
-            >
-            </router-link>
-        </div>
-        <div 
-            class="auth-links" 
-            v-else-if="mode === 'register'"
-            >
-            <router-link 
-                class="login-link" 
-                to="/login"
-                text="Вже є акаунт? Увійти"   
-            >
-            </router-link>
+                <router-link 
+                    class="login-link" 
+                    to="/login"
+                    text="Назад до входу"  
+                >
+                </router-link>
+            </div>
         </div>
 
-        <div class="auth-links" 
-            v-else-if="mode === 'forgot'"
-        >
-            <router-link 
-                class="login-link" 
-                to="/login"
-                text="Назад до входу"  
-            >
-            </router-link>
+        <div v-if="isLoading" class="loader"></div>
+
+        <div v-if="showSuccessMessage" class="success-message">
+            <h3>Ви успішно зареєстровані!</h3>
         </div>
+
     </div>
 </template>
 
 <script setup>
 import MusicButton from './MusicButton.vue';
 import { ref, reactive, computed } from 'vue';
+import { useStore } from 'vuex';
+import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 const showPassword = ref(false);
 const showPasswordConfirm = ref(false);
+const store = useStore();
+
+const route = useRoute();
+const router = useRouter();
+
+const isLoading = ref(false);
+const showSuccessMessage = ref(false);
 
 
 const props = defineProps({
@@ -142,6 +161,9 @@ const errors = reactive({
     passwordConfirm: ''
 });
 
+
+const authStatus = computed(() => store.getters.authStatus);
+const authError = computed(() => store.getters.authError);
 
 function validateForm() {
     let isValid = true;
@@ -170,7 +192,6 @@ function validateForm() {
         }
     }
 
-
     if (props.mode === 'register') {
         if (!formData.passwordConfirm) {
             errors.passwordConfirm = 'Підтвердіть пароль';
@@ -184,16 +205,56 @@ function validateForm() {
     return isValid;
 }
 
-function handleSubmit() {
+async function handleSubmit() {
     if (!validateForm()) return;
 
-    if (props.mode === 'login') {
-        console.log('Вхід з даними', formData);
-    } else if (props.mode === 'register') {
-        console.log('Реєстрація з даними', formData);
-    } else if (props.mode === 'forgot') {
-        console.log('Відновлення паролю для', formData.email);
+    isLoading.value = true;
+    showSuccessMessage.value = false;
+
+    try {
+        if (props.mode === 'register') {
+            await store.dispatch('register', { 
+                name: formData.name,
+                email: formData.email, 
+                password: formData.password 
+            });
+        } else if (props.mode === 'login') {
+            await store.dispatch('login', { 
+                email: formData.email, 
+                password: formData.password 
+            });
+            router.push('/player');
+        } else if (props.mode === 'forgot') {
+            // логіка відновлення пароля
+        }
+
+        if (props.mode === 'register' && store.getters.authStatus === 'success') {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            isLoading.value = false;
+            showSuccessMessage.value = true;
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            showSuccessMessage.value = false;
+            resetForm();
+        } else {
+            isLoading.value = false;
+        }
+
+    } catch (e) {
+        console.error(e);
+        isLoading.value = false;
     }
+}
+
+
+function resetForm() {
+    formData.name = '';
+    formData.email = '';
+    formData.password = '';
+    formData.passwordConfirm = '';
+    Object.keys(errors).forEach(key => errors[key] = '');
 }
 
 const submitText = computed(() => {
@@ -213,7 +274,7 @@ const submitText = computed(() => {
     margin: 0 auto;
 }
 .form-group {
-    margin-bottom: var(--m-space-16);
+    margin-bottom: 12px;
     position: relative;
 }
 label {
@@ -242,6 +303,9 @@ input {
     &:focus:-ms-input-placeholder {
         color: transparent;
     }
+    &::placeholder {
+        font-size: var(--fs-small);
+    }
 }
 .auth-links {
     margin-top: var(--m-space-16);
@@ -250,13 +314,42 @@ input {
     cursor: pointer;
     position: absolute;
     right: 16px;
-    top: 30px;
+    top: 34px;
 }
 .error-text {
     @include mixins.text-small();
     color: var(--palette-red);
     margin-top: 4px;
     display: block;
+}
+.loader {
+    width: 100px;
+    aspect-ratio: 1;
+    display: grid;
+    border: 4px solid #0000;
+    border-radius: 50%;
+    border-color: #ccc #0000;
+    animation: l16 1s infinite linear;
+}
+.loader::before,
+.loader::after {    
+    content: "";
+    grid-area: 1/1;
+    margin: 2px;
+    border: inherit;
+    border-radius: 50%;
+}
+.loader::before {
+    border-color: #f03355 #0000;
+    animation: inherit; 
+    animation-duration: .5s;
+    animation-direction: reverse;
+}
+.loader::after {
+    margin: 8px;
+}
+@keyframes l16 { 
+    100%{transform: rotate(1turn)}
 }
 
 </style>
