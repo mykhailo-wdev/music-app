@@ -15,7 +15,8 @@ export default {
         user: null,
         token: localStorage.getItem('token') || null,
         status: null,
-        error: null
+        error: null,
+        authErrors: {},
     }),
 
     mutations: {
@@ -28,6 +29,9 @@ export default {
         setStatus(state, status) {
             state.status = status;
         },
+        setAuthErrors(state, errors) {
+            state.authErrors = errors;
+        },
         setError(state, error) {
             state.error = error;
         },
@@ -38,6 +42,9 @@ export default {
             state.error = null;
             localStorage.removeItem('token');
             localStorage.removeItem('refresh_token'); 
+        },
+        clearAuthErrors(state) {
+            state.authErrors = {};
         }
     },
 
@@ -61,34 +68,25 @@ export default {
 
         async login({ commit }, payload) {
             commit('setStatus', 'loading');
-            commit('setError', null);
+            commit('clearAuthErrors');
             try {
-                const res = await axios.post(`${API_BASE_URL}/login.php`, payload);
+            const res = await axios.post(`${API_BASE_URL}/login.php`, payload);
 
-                console.log('Server response:', res.data);
-
-                if (res.data.status === 'success') {
-                    commit('setStatus', 'success');
-                    commit('setUser', res.data.user || payload.email);
-
-                    console.log('Before saving token:', res.data.access_token, res.data.refresh_token);
-
-                    commit('setToken', res.data.access_token);
-                    localStorage.setItem('token', res.data.access_token);
-                    localStorage.setItem('refresh_token', res.data.refresh_token);
-
-                    console.log('After saving token:', localStorage.getItem('token'), localStorage.getItem('refresh_token'));
-
-                } else {
-                    commit('setStatus', 'error');
-                    commit('setError', res.data.message);
-                }
-            } catch (err) {
+            if (res.data.status === 'success') {
+                commit('setStatus', 'success');
+                commit('setUser', res.data.user || payload.email);
+                commit('setToken', res.data.access_token);
+                localStorage.setItem('token', res.data.access_token);
+                localStorage.setItem('refresh_token', res.data.refresh_token);
+            } else {
                 commit('setStatus', 'error');
-                commit('setError', err.message);
+                commit('setAuthErrors', res.data.errors || { general: res.data.message });
+            }
+            } catch (err) {
+            commit('setStatus', 'error');
+            commit('setAuthErrors', { general: err.message });
             }
         },
-
 
         async logout({ commit, state }) {
             try {
@@ -109,6 +107,6 @@ export default {
     getters: {
         isAuthenticated: (state) => !!state.user,
         authStatus: (state) => state.status,
-        authError: (state) => state.error
+        authError: (state) => state.authErrors,
     }
 };

@@ -4,18 +4,20 @@
         <h2 v-else-if="mode === 'register'">Реєстрація</h2>
         <h2 v-else-if="mode === 'forgot'">Відновлення паролю</h2>
 
+
+
         <div v-if="!isLoading && !showSuccessMessage">
             <form  @submit.prevent="handleSubmit" autocomplete="on">
                 <div v-if="mode === 'register'" class="form-group">
                     <label for="name">Ім'я</label>
-                    <input v-model="formData.name" id="name" type="text" required placeholder="Введіть Ваше Ім'я"  max="10"/>
+                    <input v-model="formData.name" id="name" type="text" required placeholder="Введіть Ваше Ім'я"  maxlength="30"/>
                     <small v-if="errors.name" class="error-text">{{ errors.name }}</small>
                 </div>
 
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input v-model="formData.email" id="email" type="email" required placeholder="Введіть Вашу електронну пошту" max="50"/>
-                    <small v-if="errors.email" class="error-text">{{ errors.email }}</small>
+                    <input v-model="formData.email" id="email" type="email" required placeholder="Введіть Вашу електронну пошту" maxlength="30"/>
+                    <small v-if="errors.email" class="error-text">{{ errors.email }}</small>                    
                 </div>
 
                 <div v-if="mode !== 'forgot'" class="form-group">
@@ -27,7 +29,7 @@
                         class="password-visible" 
                         required 
                         placeholder="Введіть Пароль" 
-                        max="50"
+                        maxlength="30"
                     />
                     <button type="button" class="toggle-pass" aria-label="Show password" @click="showPassword = !showPassword">
                         <svg v-if="showPassword" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
@@ -42,6 +44,8 @@
                     <small v-if="errors.password" class="error-text">{{ errors.password }}</small>
                 </div>
 
+                <small v-if="generalError" class="error-text">{{ generalError }}</small>
+
                 <div v-if="mode === 'register'" class="form-group">
                     <label for="passwordConfirm">Підтвердити пароль</label>
                     <input 
@@ -51,7 +55,7 @@
                         :type="showPasswordConfirm ? 'text' : 'password'" 
                         required  
                         placeholder="Повторіть пароль"
-                        max="50"
+                        maxlength="30"
                     />
                     <button type="button" class="toggle-pass" aria-label="Show password Confirm" @click="showPasswordConfirm = !showPasswordConfirm">
                         <svg v-if="showPasswordConfirm" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
@@ -79,12 +83,6 @@
                     class="forget-link" 
                     to="/recover-password" 
                     text="Забули пароль?"
-                >
-                </router-link>
-                <router-link 
-                    class="register-link" 
-                    to="/register"
-                    text="Реєстрація"    
                 >
                 </router-link>
             </div>
@@ -136,6 +134,7 @@ const router = useRouter();
 
 const isLoading = ref(false);
 const showSuccessMessage = ref(false);
+const generalError = ref('');
 
 
 const props = defineProps({
@@ -211,35 +210,60 @@ async function handleSubmit() {
     isLoading.value = true;
     showSuccessMessage.value = false;
 
+    Object.keys(errors).forEach(key => errors[key] = '');
+    generalError.value = '';
+
     try {
-        if (props.mode === 'register') {
+        if (props.mode === 'login') {
+            await store.dispatch('login', {
+                email: formData.email,
+                password: formData.password
+            });
+
+            if (store.getters.authStatus === 'success') {
+                router.push('/player');
+            } else {
+                const errObj = store.getters.authError || {};
+
+                errors.email = errObj.email?.trim() || '';
+                errors.password = errObj.password?.trim() || '';
+
+                if (!errors.email && !errors.password && errObj.general?.trim()) {
+                    generalError.value = errObj.general;
+                } else {
+                    generalError.value = '';
+                }
+
+                isLoading.value = false;
+                return;
+            }
+        } else if (props.mode === 'register') {
             await store.dispatch('register', { 
                 name: formData.name,
                 email: formData.email, 
                 password: formData.password 
             });
-        } else if (props.mode === 'login') {
-            await store.dispatch('login', { 
-                email: formData.email, 
-                password: formData.password 
-            });
-            router.push('/player');
-        } else if (props.mode === 'forgot') {
-            // логіка відновлення пароля
-        }
 
-        if (props.mode === 'register' && store.getters.authStatus === 'success') {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            if (store.getters.authStatus === 'success') {
+                isLoading.value = true;
+                setTimeout(() => {
+                    isLoading.value = false;
+                    showSuccessMessage.value = true;
 
-            isLoading.value = false;
-            showSuccessMessage.value = true;
+                    setTimeout(() => {
+                        showSuccessMessage.value = false;
+                        resetForm();
+                    }, 2000);
+                }, 2000);
 
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            showSuccessMessage.value = false;
-            resetForm();
-        } else {
-            isLoading.value = false;
+            } else {
+                const errObj = store.getters.authError || {};
+                errors.email = errObj.email || '';
+                errors.password = errObj.password || '';
+                errors.name = errObj.name || '';
+                isLoading.value = false;
+                return;
+            }
         }
 
     } catch (e) {
@@ -319,7 +343,7 @@ input {
 .error-text {
     @include mixins.text-small();
     color: var(--palette-red);
-    margin-top: 4px;
+    margin: 2px 0;
     display: block;
 }
 .loader {
