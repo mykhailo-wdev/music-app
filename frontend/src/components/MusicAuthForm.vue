@@ -304,6 +304,7 @@ const submitText = computed(() => {
 label {
     display: block;
     @include mixins.body-text();
+    font-size: 16px;
     font-weight: 700;
     margin-bottom: 4px;
 }
@@ -338,7 +339,7 @@ input {
     cursor: pointer;
     position: absolute;
     right: 16px;
-    top: 34px;
+    top: 30px;
 }
 .error-text {
     @include mixins.text-small();
