@@ -21,7 +21,14 @@ $password = trim($data['password'] ?? '');
 $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
 if (!$email || !$password) {
-    echo json_encode(["status" => "error", "message" => "Введіть email та пароль"]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Введіть email та пароль",
+        "errors" => [
+            "email" => !$email ? "Введіть email" : "",
+            "password" => !$password ? "Введіть пароль" : ""
+        ]
+    ]);
     exit;
 }
 
@@ -39,7 +46,14 @@ $user = $result->fetch_assoc();
 $stmt->close();
 
 if (!$user) {
-    echo json_encode(["status" => "error", "message" => "Невірний email або пароль"]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Невірний email або пароль",
+        "errors" => [
+            "email" => "Невірний email",
+            "password" => "Невірний пароль"
+        ]
+    ]);
     exit;
 }
 
@@ -60,9 +74,16 @@ if (!password_verify($password, $user['password'])) {
         $stmt->execute();
         $stmt->close();
     }
-    echo json_encode(["status" => "error", "message" => "Невірний email або пароль"]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Невірний email або пароль",
+        "errors" => [
+            "general" => "Невірний логін або пароль"
+        ]
+    ]);
     exit;
 }
+
 
 // Скидаємо лічильник невдалих входів, оновлюємо last_login_at і login_ip
 $stmt = $mysqli->prepare("UPDATE users SET failed_attempts = 0, last_login_at = NOW(), login_ip = ? WHERE id = ?");
