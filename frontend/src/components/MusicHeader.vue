@@ -10,9 +10,15 @@
                         <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60">
                     </router-link>
                 </div>
-                <div class="header-btns">
-                    <music-button type-btn="btn-fresh" text="Вихід" @click="logout" v-if="isOnPlayerRoute"></music-button>
-                    <music-button v-else type-btn="btn-fresh" text="Вхід" to="/login"></music-button>
+                <div class="header-btns" v-if="isOnPlayerRoute">
+                    <music-button type-btn="btn-fresh" text="Вихід" @click="logout"></music-button>
+                    <music-button type-btn="btn-sky" text="Профіль" to="/profile"></music-button>
+                </div>
+                <div class="header-btns" v-else-if="isOnProfileRoute">
+                    <music-button type-btn="btn-sky" text="Назад в плеєр" to="/player"></music-button>
+                </div>
+                <div class="header-btns" v-else>
+                    <music-button type-btn="btn-fresh" text="Вхід" to="/login"></music-button>
                     <music-button type-btn="btn-sky" text="Реєстрація" to="/register"></music-button>
                 </div>
             </div>
@@ -32,6 +38,10 @@ const store = useStore();
 
 const isOnPlayerRoute = computed(() => {
   return route.path.startsWith('/player');
+});
+
+const isOnProfileRoute = computed(() => {
+  return route.path.startsWith('/profile');
 });
 
 function logout() {
