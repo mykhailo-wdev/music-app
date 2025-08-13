@@ -4,8 +4,6 @@
         <h2 v-else-if="mode === 'register'">Реєстрація</h2>
         <h2 v-else-if="mode === 'forgot'">Відновлення паролю</h2>
 
-
-
         <div v-if="!isLoading && !showSuccessMessage">
             <form  @submit.prevent="handleSubmit" autocomplete="on">
                 <div v-if="mode === 'register'" class="form-group">
@@ -145,7 +143,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['change-mode'])
-
 const formData = reactive({
     name: '',
     email: '',
@@ -264,8 +261,27 @@ async function handleSubmit() {
                 isLoading.value = false;
                 return;
             }
-        }
+        } else if (props.mode === 'forgot') {
+            await store.dispatch('forgotPassword', {
+                email: formData.email
+            });
 
+            if (store.getters.authStatus === 'success') {
+                isLoading.value = false;
+                showSuccessMessage.value = true;
+                setTimeout(() => {
+                    showSuccessMessage.value = false;
+                    resetForm();
+                    router.push('/login');
+                }, 3000);
+            } else {
+                const errObj = store.getters.authError || {};
+                errors.email = errObj.email || '';
+                generalError.value = errObj.general || '';
+                isLoading.value = false;
+                return;
+            }
+}
     } catch (e) {
         console.error(e);
         isLoading.value = false;
@@ -376,5 +392,4 @@ input {
 @keyframes l16 { 
     100%{transform: rotate(1turn)}
 }
-
 </style>

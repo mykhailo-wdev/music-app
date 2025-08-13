@@ -1,12 +1,22 @@
 <?php
-$host = 'mysql';
-$user = 'user';
-$password = 'password';
-$database = 'testdb';
+$host = 'mysql';       // ім'я сервісу MySQL у Docker
+$dbname = 'testdb';    // назва твоєї БД
+$username = 'user';    // користувач
+$password = 'password'; // пароль
 
-$mysqli = new mysqli($host, $user, $password, $database);
-if ($mysqli->connect_error) {
-    die(json_encode(["status" => "error", "message" => "DB connection error: " . $mysqli->connect_error]));
+try {
+    $pdo = new PDO(
+        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
+        $username,
+        $password
+    );
+
+    // Кидаємо помилки як виключення
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+} catch (PDOException $e) {
+    die(json_encode([
+        "status" => "error",
+        "message" => "DB connection failed: " . $e->getMessage()
+    ]));
 }
-$mysqli->set_charset("utf8mb4");
-?>

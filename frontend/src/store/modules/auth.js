@@ -45,6 +45,17 @@ export default {
         },
         clearAuthErrors(state) {
             state.authErrors = {};
+        },
+        auth_request(state) {
+            state.status = 'loading';
+            state.authErrors = {};
+        },
+        auth_success(state) {
+            state.status = 'success';
+        },
+        auth_error(state, errors) {
+            state.status = 'error';
+            state.authErrors = errors;
         }
     },
 
@@ -100,7 +111,28 @@ export default {
             } catch (error) {
             }
             commit('logout');
+        },
+
+        async forgotPassword({ commit }, payload) {
+            commit('setStatus', 'loading');
+            commit('clearAuthErrors');
+
+            try {
+                const res = await axios.post(`${API_BASE_URL}/forgot_password.php`, payload);
+
+                if (res.data.status === 'success') {
+                    commit('setStatus', 'success');
+                } else {
+                    commit('setStatus', 'error');
+                    commit('setAuthErrors', res.data.errors || { general: res.data.message });
+                }
+            } catch (err) {
+                commit('setStatus', 'error');
+                commit('setAuthErrors', { general: 'Помилка з’єднання з сервером' });
+            }
         }
+
+
 
     },
 
