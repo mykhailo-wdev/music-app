@@ -57,23 +57,53 @@ if (!$user) {
     exit;
 }
 
+// Якщо вже в статусі banned — блокуємо
 if ($user['status'] === 'banned') {
     echo json_encode(["status" => "error", "message" => "Ваш акаунт заблоковано"]);
     exit;
 }
 
-if ($user['failed_attempts'] >= 5) {
+// Якщо лічильник вже >= 5 — оновимо статус (щоб прив'язати блокування до статусу) і повернемо повідомлення
+if ((int)$user['failed_attempts'] >= 5) {
+    $ustmt = $mysqli->prepare("UPDATE users SET status = 'banned' WHERE id = ?");
+    if ($ustmt) {
+        $ustmt->bind_param("i", $user['id']);
+        $ustmt->execute();
+        $ustmt->close();
+    }
     echo json_encode(["status" => "error", "message" => "Акаунт тимчасово заблоковано через багато невдалих входів"]);
     exit;
 }
 
+// Перевіряємо пароль
 if (!password_verify($password, $user['password'])) {
-    $stmt = $mysqli->prepare("UPDATE users SET failed_attempts = failed_attempts + 1 WHERE id = ?");
-    if ($stmt) {
-        $stmt->bind_param("i", $user['id']);
-        $stmt->execute();
-        $stmt->close();
+    // Інкрементуємо failed_attempts і, якщо після інкременту >=5, ставимо status='banned'
+    $ustmt = $mysqli->prepare("UPDATE users SET failed_attempts = failed_attempts + 1, status = IF(failed_attempts + 1 >= 5, 'banned', status) WHERE id = ?");
+    if ($ustmt) {
+        $ustmt->bind_param("i", $user['id']);
+        $ustmt->execute();
+        $ustmt->close();
     }
+
+    // Дізнаємось актуальний стан після оновлення
+    $rstmt = $mysqli->prepare("SELECT failed_attempts, status FROM users WHERE id = ?");
+    if ($rstmt) {
+        $rstmt->bind_param("i", $user['id']);
+        $rstmt->execute();
+        $rres = $rstmt->get_result();
+        $updated = $rres->fetch_assoc();
+        $rstmt->close();
+    } else {
+        $updated = ["failed_attempts" => $user['failed_attempts'] + 1, "status" => $user['status']];
+    }
+
+    // Якщо після інкременту користувач заблокований — повертаємо повідомлення про блокування
+    if (isset($updated['status']) && $updated['status'] === 'banned') {
+        echo json_encode(["status" => "error", "message" => "Акаунт тимчасово заблоковано через багато невдалих входів"]);
+        exit;
+    }
+
+    // Інакше повертаємо звичну помилку входу (можна показати загальну)
     echo json_encode([
         "status" => "error",
         "message" => "Невірний email або пароль",
@@ -84,22 +114,21 @@ if (!password_verify($password, $user['password'])) {
     exit;
 }
 
-
-// Скидаємо лічильник невдалих входів, оновлюємо last_login_at і login_ip
-$stmt = $mysqli->prepare("UPDATE users SET failed_attempts = 0, last_login_at = NOW(), login_ip = ? WHERE id = ?");
-if (!$stmt) {
+// Якщо пароль вірний — скидаємо лічильник і оновлюємо last_login_at, login_ip та статус = 'active'
+$ustmt = $mysqli->prepare("UPDATE users SET failed_attempts = 0, last_login_at = NOW(), login_ip = ?, status = 'active' WHERE id = ?");
+if (!$ustmt) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Помилка оновлення даних користувача"]);
     exit;
 }
-$stmt->bind_param("si", $ip, $user['id']);
-if (!$stmt->execute()) {
+$ustmt->bind_param("si", $ip, $user['id']);
+if (!$ustmt->execute()) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Не вдалося оновити дані користувача"]);
-    $stmt->close();
+    $ustmt->close();
     exit;
 }
-$stmt->close();
+$ustmt->close();
 
 // Параметри JWT
 $secret_key = "aD8SZNhKlC5McZBe2sac2YDdZ6JN7un0OJTULKgJ35w=";
