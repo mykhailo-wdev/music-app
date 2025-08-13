@@ -42,11 +42,11 @@ try {
     $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
     $userId = $decoded->data->id;
 
-    // Оновлюємо час останнього логауту
-    $stmt = $mysqli->prepare("UPDATE users SET last_logout_at = NOW() WHERE id = ?");
+    // Оновлюємо статус і час останнього логауту
+    $stmt = $mysqli->prepare("UPDATE users SET last_logout_at = NOW(), status = 'pending' WHERE id = ?");
     $stmt->bind_param("i", $userId);
     if (!$stmt->execute()) {
-        error_log("Failed to update last_logout_at: " . $stmt->error);
+        error_log("Failed to update last_logout_at and status: " . $stmt->error);
     }
     $stmt->close();
 
@@ -58,7 +58,7 @@ try {
     }
     $stmt->close();
 
-    echo json_encode(['status' => 'success', 'message' => 'Вихід виконано']);
+    echo json_encode(['status' => 'success', 'message' => 'Вихід виконано, статус змінено на pending']);
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode(['status' => 'error', 'message' => 'Невалідний токен']);
