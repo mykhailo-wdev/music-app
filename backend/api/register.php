@@ -1,8 +1,6 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-
 header("Access-Control-Allow-Methods: POST, OPTIONS");
-
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -11,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 header("Content-Type: application/json");
-require 'db.php';
+require_once __DIR__ . '/db.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -37,27 +35,20 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 // Перевірка на існування користувача
-$stmt = $mysqli->prepare("SELECT id FROM users WHERE email = ?");
-$stmt->bind_param("s", $email);
-$stmt->execute();
-$stmt->store_result();
-if ($stmt->num_rows > 0) {
+$stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+$stmt->execute([$email]);
+if ($stmt->fetch(PDO::FETCH_ASSOC)) {
     echo json_encode(["status" => "error", "message" => "Користувач з таким email вже існує"]);
     exit;
 }
-$stmt->close();
 
-
+// Хешуємо пароль
 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-
-$stmt = $mysqli->prepare("INSERT INTO users (name, email, password, status) VALUES (?, ?, ?, 'pending')");
-$stmt->bind_param("sss", $name, $email, $hashedPassword);
-
-if ($stmt->execute()) {
+// Вставляємо користувача у БД
+$stmt = $pdo->prepare("INSERT INTO users (name, email, password, status) VALUES (?, ?, ?, 'pending')");
+if ($stmt->execute([$name, $email, $hashedPassword])) {
     echo json_encode(["status" => "success", "message" => "Реєстрація успішна!"]);
 } else {
     echo json_encode(["status" => "error", "message" => "Помилка реєстрації"]);
 }
-$stmt->close();
-?>

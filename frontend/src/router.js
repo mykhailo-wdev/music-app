@@ -6,6 +6,7 @@ import PlayerPage from "./views/PlayerPage.vue";
 import NotFound from "./views/NotFound.vue";
 import RegistrationPage from "./views/RegistrationPage.vue";
 import ProfilePage from "./views/ProfilePage.vue";
+import ResetPassword from "./views/ResetPassword.vue";
 
 const router =  createRouter({
     history: createWebHistory(),
@@ -39,6 +40,11 @@ const router =  createRouter({
             path: '/profile',
             component: ProfilePage,
             meta: { title: 'Профіль - Pulsebox' }
+        },
+        {
+            path: '/reset-password',
+            component: ResetPassword,
+            meta: { title: 'Відновити пароль - Pulsebox' }
         },
         {   path: '/:pathMatch(.*)*', 
             name: 'NotFound', 
