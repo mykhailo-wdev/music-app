@@ -20,5 +20,16 @@ const router = useRouter();
 </script>
 
 <style lang="scss" scoped>
-
+.forgot {
+    height: calc(100vh - 100px);
+    height: calc(100dvh - 100px);
+    padding: var(--m-space-80) 0;
+}
+@media (max-width: 576px) {
+    .forgot {
+        height: calc(100vh - 120px);
+        height: calc(100dvh - 120px);
+        padding: var(--m-space-32) 0;
+    }
+}
 </style>
