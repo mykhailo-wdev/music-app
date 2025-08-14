@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require 'db.php';
+require_once __DIR__ . '/db.php'; 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Firebase\JWT\JWT;
@@ -43,20 +43,12 @@ try {
     $userId = $decoded->data->id;
 
     // Оновлюємо статус і час останнього логауту
-    $stmt = $mysqli->prepare("UPDATE users SET last_logout_at = NOW(), status = 'pending' WHERE id = ?");
-    $stmt->bind_param("i", $userId);
-    if (!$stmt->execute()) {
-        error_log("Failed to update last_logout_at and status: " . $stmt->error);
-    }
-    $stmt->close();
+    $stmt = $pdo->prepare("UPDATE users SET last_logout_at = NOW(), status = 'pending' WHERE id = ?");
+    $stmt->execute([$userId]);
 
     // Видаляємо конкретний refresh token (інвалідовуємо сесію)
-    $stmt = $mysqli->prepare("DELETE FROM refresh_tokens WHERE user_id = ? AND token = ?");
-    $stmt->bind_param("is", $userId, $refresh_token);
-    if (!$stmt->execute()) {
-        error_log("Failed to delete refresh token: " . $stmt->error);
-    }
-    $stmt->close();
+    $stmt = $pdo->prepare("DELETE FROM refresh_tokens WHERE user_id = ? AND token = ?");
+    $stmt->execute([$userId, $refresh_token]);
 
     echo json_encode(['status' => 'success', 'message' => 'Вихід виконано, статус змінено на pending']);
 } catch (Exception $e) {
