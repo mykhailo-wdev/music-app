@@ -58,17 +58,17 @@ $stmt->execute([$user['id'], $token, $expires]);
 
 $resetLink = "http://localhost:5173/reset-password?token=$token";
 
-// --- Відправка листа через PHPMailer ---
+
 $mail = new PHPMailer(true);
 
 try {
     $mail->isSMTP();
-    $mail->SMTPDebug = 2; // поставити 2 для логів
+    $mail->SMTPDebug = 2; 
     $mail->Debugoutput = 'html';
     $mail->Host       = 'smtp.ukr.net';
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'everestads@ukr.net'; // твій email
-    $mail->Password   = 'oT5AlM245gZwItm9';   // пароль додатку
+    $mail->Username   = 'everestads@ukr.net'; 
+    $mail->Password   = 'oT5AlM245gZwItm9';   
     $mail->SMTPSecure = 'ssl';
     $mail->Port       = 465;
 
