@@ -72,6 +72,9 @@ try {
     $mail->SMTPSecure = 'ssl';
     $mail->Port       = 465;
 
+    $mail->CharSet = 'UTF-8';
+    $mail->Encoding = 'base64';
+
     $mail->setFrom('everestads@ukr.net', 'Music App');
     $mail->addAddress($email);
 
