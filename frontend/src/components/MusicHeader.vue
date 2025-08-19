@@ -2,13 +2,8 @@
     <header class="header-wrap">
         <div class="container">
             <div class="header-row">
-                <div class="header-logo" v-if="route.path === '/'">
+                <div class="header-logo">
                     <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60">
-                </div>
-                <div v-else class="header-logo">
-                    <router-link to="/">
-                        <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60">
-                    </router-link>
                 </div>
                 <div class="header-btns" v-if="isOnPlayerRoute">
                     <music-button type-btn="btn-fresh" text="Вихід" @click="logout"></music-button>
