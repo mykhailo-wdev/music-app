@@ -7,6 +7,7 @@ import NotFound from "./views/NotFound.vue";
 import RegistrationPage from "./views/RegistrationPage.vue";
 import ProfilePage from "./views/ProfilePage.vue";
 import ResetPassword from "./views/ResetPassword.vue";
+import VerifyEmail from "./views/VerifyEmail.vue";
 
 const router =  createRouter({
     history: createWebHistory(),
@@ -45,6 +46,11 @@ const router =  createRouter({
             path: '/reset-password',
             component: ResetPassword,
             meta: { title: 'Відновити пароль - Pulsebox' }
+        },
+        {
+            path: '/verify-email',
+            component: VerifyEmail,
+            meta: { title: 'Верифікація - Pulsebox' }
         },
         {   path: '/:pathMatch(.*)*', 
             name: 'NotFound', 

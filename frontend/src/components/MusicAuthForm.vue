@@ -111,7 +111,7 @@
         <div v-if="isLoading" class="loader"></div>
 
         <div v-if="showSuccessMessage" class="success-message">
-            <h3>Ви успішно зареєстровані!</h3>
+            <h3>Залишилось зовсім небагато. Для підтвердження рестрації, перейдуть у Вашу елетронну пошту та підтвердіть реєстрацію</h3>
         </div>
 
     </div>

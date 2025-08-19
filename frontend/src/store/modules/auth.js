@@ -94,8 +94,8 @@ export default {
                 commit('setAuthErrors', res.data.errors || { general: res.data.message });
             }
             } catch (err) {
-            commit('setStatus', 'error');
-            commit('setAuthErrors', { general: err.message });
+                commit('setStatus', 'error');
+                commit('setAuthErrors', { general: err.message });
             }
         },
 
@@ -130,10 +130,28 @@ export default {
                 commit('setStatus', 'error');
                 commit('setAuthErrors', { general: 'Помилка з’єднання з сервером' });
             }
+        },
+
+        async verifyEmail({ commit }, token) {
+            commit('auth_request');
+            try {
+                const res = await axios.post(`${API_BASE_URL}/verify_email.php`, { token });
+                if (res.data.status === 'success') {
+                    localStorage.setItem('token', res.data.access_token);
+                    localStorage.setItem('refresh_token', res.data.refresh_token);
+                    commit('setToken', res.data.access_token);
+                    if (res.data.user) commit('setUser', res.data.user);
+                    commit('auth_success');
+                    return { success: true };
+                } else {
+                    commit('auth_error', { general: res.data.message });
+                    return { success: false, message: res.data.message };
+                }
+            } catch (err) {
+                commit('auth_error', { general: err.message });
+                return { success: false, message: err.message };
+            }
         }
-
-
-
     },
 
     getters: {
