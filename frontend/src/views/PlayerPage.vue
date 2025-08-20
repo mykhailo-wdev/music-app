@@ -1,24 +1,13 @@
 <template>
-    <div>
-        <h1>Player Page</h1>
-    </div>
+    <main class="main-app">
+        <div class="container">
+            <music-search :search-limit="null"></music-search>
+        </div>
+    </main>
 </template>
 
 <script setup>
-// import { useRoute } from 'vue-router';
-// import { useRouter } from 'vue-router';
-// import { useStore } from 'vuex';
-
-// const route = useRoute();
-// const router = useRouter();
-// const store = useStore();
-
-// const token = route.query.token;
-// if(token) {
-//     localStorage.setItem('token', token);
-//     store.commit('setToken', token);
-//     router.replace({ path: '/player', query: {} });
-// }
+import MusicSearch from '@/components/MusicSearch.vue';
 
 </script>
 
