@@ -1,4 +1,6 @@
 import axios from "axios";
+import jamendoApi from "@/api/jamendo";
+import backendApi from "@/api/backend";
 
 const clientId = process.env.JAMENDO_CLIENT_ID;
 
@@ -16,7 +18,7 @@ export default {
         const endpoint = `https://api.jamendo.com/v3.0/tracks/?client_id=${clientId}&format=json&limit=10&search=${encodeURIComponent(state.searchValue)}`;
 
         try {
-            const response = await axios.get(endpoint);
+            const response = await jamendoApi.get(endpoint);
             commit('setSongs', response.data.results); 
             } catch (error) {
                 console.error('❌ Помилка при запиті пісень з Jamendo:', error);

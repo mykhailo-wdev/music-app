@@ -99,7 +99,7 @@ const searchMusic = async () => {
         
         store.commit('calculateSearch');
 
-        if (count.value >= props.searchLimit) {
+        if (props.searchLimit && count.value >= props.searchLimit) {
             showAlert.value = true;
             isLoading.value = false;
             return;
@@ -113,7 +113,7 @@ const searchMusic = async () => {
 
 
 const selectSong = (song) => {
-    if (count.value >= props.searchLimit) {
+    if (props.searchLimit && count.value >= props.searchLimit) {
         showAlert.value = true;
         return;
     }
@@ -150,13 +150,13 @@ const showAlert = ref(false);
 const count = computed(() => store.getters.countSearch);
 
 watch(count, (newVal) => {
-  if (newVal >= props.searchLimit) {
-    showAlert.value = true;
-  }
+    if (props.searchLimit && newVal >= props.searchLimit) {
+            showAlert.value = true;
+    }
 });
 
 function closeAlert() {
-  showAlert.value = false;
+    showAlert.value = false;
 }
 
 
