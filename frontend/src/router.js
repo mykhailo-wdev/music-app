@@ -8,6 +8,7 @@ import RegistrationPage from "./views/RegistrationPage.vue";
 import ProfilePage from "./views/ProfilePage.vue";
 import ResetPassword from "./views/ResetPassword.vue";
 import VerifyEmail from "./views/VerifyEmail.vue";
+import PlayList from "./views/PlayList.vue";
 
 const router =  createRouter({
     history: createWebHistory(),
@@ -51,6 +52,11 @@ const router =  createRouter({
             path: '/verify-email',
             component: VerifyEmail,
             meta: { title: 'Верифікація - Pulsebox' }
+        },
+        {
+            path: '/playlists',
+            component: PlayList,
+            meta: { title: 'Плейлисти - Pulsebox' }
         },
         {   path: '/:pathMatch(.*)*', 
             name: 'NotFound', 

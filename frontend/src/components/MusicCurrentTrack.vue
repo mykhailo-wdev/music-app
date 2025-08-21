@@ -45,12 +45,17 @@
             />
         </div>
         <audio ref="audio" :src="currentSong.audio" @timeupdate="updateTime" @loadedmetadata="loadMetadata" />
+        <div class="playlist-btn" v-if="route.path === '/player'">
+            <music-add-to-playlist></music-add-to-playlist>
+        </div>
     </div>
 </template>
 
 <script setup>
+import MusicAddToPlaylist from './MusicAddToPlaylist.vue';
 import { useStore } from 'vuex';
 import { ref, watch, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 
 const store = useStore();
 const isLoadingImg = ref(true); 
@@ -60,6 +65,9 @@ const isPlaying = ref(false);
 const currentTime = ref(0);
 const duration = ref(0);
 const volume = ref(1);
+
+const router = useRouter();
+const route = useRoute();
 
 const currentSong = computed(() => store.getters.currentSong);
 
@@ -256,4 +264,8 @@ h4 {
 }
 @keyframes l8-0 {to{background-position: -58% 100%}}
 @keyframes l8-1 {to{rotate: 120deg}}
+
+.playlist-btn {
+    margin-top: var(--m-space-16);
+}
 </style>
