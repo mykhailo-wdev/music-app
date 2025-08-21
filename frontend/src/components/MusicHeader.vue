@@ -2,7 +2,15 @@
     <header class="header-wrap">
         <div class="container">
             <div class="header-row">
-                <div class="header-logo">
+                <div class="header-logo" v-if="route.path === '/'">
+                    <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60">
+                </div>
+                <div class="header-logo" v-else-if="route.path === '/player'">
+                    <router-link to="playlists">
+                        <img :src="require('@/assets/images/playlists.svg')" alt="Playlists" width="120" height="26">
+                    </router-link>
+                </div>
+                <div class="header-logo" v-else>
                     <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60">
                 </div>
                 <div class="header-btns" v-if="isOnPlayerRoute">
@@ -10,6 +18,10 @@
                     <music-button type-btn="btn-sky" text="Профіль" to="/profile"></music-button>
                 </div>
                 <div class="header-btns" v-else-if="isOnProfileRoute">
+                    <music-button type-btn="btn-sky" text="Назад в плеєр" to="/player"></music-button>
+                </div>
+                <div class="header-btns" v-else-if="isOnPlayListsRoute">
+                    <music-button type-btn="btn-fresh" text="Вихід" @click="logout"></music-button>
                     <music-button type-btn="btn-sky" text="Назад в плеєр" to="/player"></music-button>
                 </div>
                 <div class="header-btns" v-else>
@@ -37,6 +49,10 @@ const isOnPlayerRoute = computed(() => {
 
 const isOnProfileRoute = computed(() => {
   return route.path.startsWith('/profile');
+});
+
+const isOnPlayListsRoute = computed(() => {
+  return route.path.startsWith('/playlists');
 });
 
 function logout() {

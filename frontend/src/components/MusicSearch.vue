@@ -224,10 +224,6 @@ function closeAlert() {
         background-color: var(--palette-sky);
         color: var(--palette-white);
     }
-    
-
-
 }
-
 
 </style>
