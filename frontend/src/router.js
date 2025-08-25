@@ -9,6 +9,7 @@ import ProfilePage from "./views/ProfilePage.vue";
 import ResetPassword from "./views/ResetPassword.vue";
 import VerifyEmail from "./views/VerifyEmail.vue";
 import PlayList from "./views/PlayList.vue";
+import store from "./store";
 
 const router =  createRouter({
     history: createWebHistory(),
@@ -21,37 +22,37 @@ const router =  createRouter({
         {
             path: '/login',
             component: LoginPage,
-            meta: { title: 'Вхід - Pulsebox' }
+            meta: { title: 'Вхід - Pulsebox', guestOnly: true }
         },
         {
             path: '/register',
             component: RegistrationPage,
-            meta: { title: 'Реєстрація - Pulsebox' }
+            meta: { title: 'Реєстрація - Pulsebox', guestOnly: true }
         },
         {
             path: '/recover-password',
             component: RecoverPassword,
-            meta: { title: 'Відновити пароль - Pulsebox' }
+            meta: { title: 'Відновити пароль - Pulsebox', guestOnly: true }
         },
         {
             path: '/player',
             component: PlayerPage,
-            meta: { title: 'Плеєр - Pulsebox' }
+            meta: { title: 'Плеєр - Pulsebox', requiresAuth: true }
         },
         {
             path: '/profile',
             component: ProfilePage,
-            meta: { title: 'Профіль - Pulsebox' }
+            meta: { title: 'Профіль - Pulsebox', requiresAuth: true }
         },
         {
             path: '/reset-password',
             component: ResetPassword,
-            meta: { title: 'Відновити пароль - Pulsebox' }
+            meta: { title: 'Відновити пароль - Pulsebox', guestOnly: true }
         },
         {
             path: '/verify-email',
             component: VerifyEmail,
-            meta: { title: 'Верифікація - Pulsebox' }
+            meta: { title: 'Верифікація - Pulsebox', guestOnly: true }
         },
         {
             path: '/playlists',
@@ -70,6 +71,17 @@ const router =  createRouter({
 router.beforeEach((to, from, next) => {
     const defaultTitle = 'Pulsebox'; 
     document.title = to.meta.title || defaultTitle;
+
+    const isAuth = store.getters["isAuthenticated"];
+
+    if (to.meta.requiresAuth && !isAuth) {
+        return next("/login");    
+    }
+
+    if (to.meta.guestOnly && isAuth) {
+        return next("/player");   
+    }
+
     next();
 });
 

@@ -105,10 +105,11 @@ export default {
                 refresh_token: localStorage.getItem('refresh_token')
             }, {
                 headers: {
-                Authorization: `Bearer ${state.token}`
+                    Authorization: `Bearer ${state.token}`
                 }
             });
             } catch (error) {
+                console.warn('Logout API failed:', error.message);
             }
             commit('logout');
         },
@@ -155,7 +156,8 @@ export default {
     },
 
     getters: {
-        isAuthenticated: (state) => !!state.user,
+        // isAuthenticated: (state) => !!state.user,
+        isAuthenticated: (state) => !!state.token,
         authStatus: (state) => state.status,
         authError: (state) => state.authErrors,
     }
