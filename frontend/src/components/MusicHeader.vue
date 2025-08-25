@@ -44,20 +44,20 @@ const route = useRoute();
 const store = useStore();
 
 const isOnPlayerRoute = computed(() => {
-  return route.path.startsWith('/player');
+    return route.path.startsWith('/player');
 });
 
 const isOnProfileRoute = computed(() => {
-  return route.path.startsWith('/profile');
+    return route.path.startsWith('/profile');
 });
 
 const isOnPlayListsRoute = computed(() => {
-  return route.path.startsWith('/playlists');
+    return route.path.startsWith('/playlists');
 });
 
-function logout() {
-  store.dispatch('logout');
-  router.push('/login');
+async function logout() {
+    await store.dispatch('logout'); 
+    router.push('/login');          
 }
 
 </script>
