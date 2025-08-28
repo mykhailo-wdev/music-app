@@ -14,7 +14,7 @@
 
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input v-model="formData.email" id="email" type="email" required placeholder="Введіть Вашу електронну пошту" maxlength="30"/>
+                    <input v-model="formData.email" id="email" type="email" required placeholder="Введіть Вашу електронну пошту" maxlength="50"/>
                     <small v-if="errors.email" class="error-text">{{ errors.email }}</small>                    
                 </div>
 
@@ -138,7 +138,7 @@ const generalError = ref('');
 const props = defineProps({
     mode: {
         type: String,
-        default: 'login', // 'login' | 'register' | 'forgot'
+        default: 'login', 
     }
 })
 
