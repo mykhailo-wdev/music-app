@@ -17,7 +17,7 @@ const router =  createRouter({
         {
             path: '/',
             component: HomePage,
-            meta: { title: 'Pulsebox' }
+            meta: { title: 'Pulsebox', guestOnly: true }
         },
         {
             path: '/login',
