@@ -11,7 +11,7 @@
 
                 <div v-if="!playlists.length" class="empty">
                     <p>У вас ще немає плейлистів.</p>
-                    <input v-model="newName" placeholder="Назва нового плейлиста" />
+                    <input class="first-playlist" v-model="newName" placeholder="Назва нового плейлиста" />
                     <music-button :disabled="!newName.trim()" type-btn="btn-sky" text="Створити" @action="create"></music-button>
                 </div>
 
@@ -211,5 +211,14 @@ function closeModal() {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+.first-playlist {
+    outline: none;
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    border: 1px solid var(--palette-dark);
+    text-indent: 16px;
+    @include mixins.text-small();
 }
 </style>
