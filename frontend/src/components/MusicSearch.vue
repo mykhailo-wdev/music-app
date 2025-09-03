@@ -5,7 +5,18 @@
                 v-if="showAlert"
                 alertTitle="Ліміт вичерпано"
                 alertDescription="Будь ласка, зараєструйтесь, щоб користуватись безлімітним пошуком. А також отримати більше спектр можливостей"
-                @close="closeAlert"
+                :buttons="[
+                    {
+                        text: 'Закрити',
+                        typeBtn: 'btn-hot',
+                        action: () => closeAlert()
+                    },
+                    {
+                        text: 'Реєстрація',
+                        typeBtn: 'btn-sky',
+                        to: '/register'
+                    }
+                ]"
             ></music-alert>
         </transition>
         <div class="search-row">
