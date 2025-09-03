@@ -1,9 +1,29 @@
 <template>
     <div class="container">
+        <transition name="slide-fade">
+            <music-alert
+                v-if="showAlert"
+                alertTitle="Ви дійсно хочете видалити цей плейлист"
+                alertDescription="Цією дією Ви підтверджуєте його видалення назавжди"
+                :buttons="[
+                    {
+                        text: 'Закрити',
+                        typeBtn: 'btn-hot',
+                        action: () => closeAlert()
+                    },
+                    {
+                        text: 'Видалити',
+                        typeBtn: 'btn-fresh',
+                        action: () => confirmDelete()
+                    }
+                ]"
+            ></music-alert>
+        </transition>
+
         <h1>Мої плейлисти</h1>
 
     <div class="new-playlist">
-        <input v-model="newPlaylistName" placeholder="Нова назва плейлиста" />
+        <input v-model="newPlaylistName" @keypress.enter="createNewPlaylist" placeholder="Нова назва плейлиста" />
         <music-button @click="createNewPlaylist" type-btn="btn-sky" text="Створити"></music-button>
         <p v-if="errorEmptyPlaylist">Поле не може бути пусте. Введіть назву плейлиста</p>
     </div>
@@ -19,12 +39,12 @@
             <ul>
                 <li v-for="track in tracksOf(pl.id)" :key="track.id">
                     {{ track.track_name }} – {{ track.artist_name }}
-                    <button @click="removeTrack(pl.id, track.id)">❌</button>
+                    <button class="delete-track" @click="removeTrack(pl.id, track.id)">❌</button>
                 </li>
             </ul>
             <div class="playlist-btns">
-                <music-button @click="addTrack(pl.id)"  type-btn="btn-sunny" text="Додати трек"></music-button>
                 <music-button type-btn="btn-fresh" text="Слухати плейлист"></music-button>
+                <music-button type-btn="btn-hot" text="Видалити" @action="askDelete(pl.id)"></music-button>
             </div>
         </div>
     </div>
@@ -39,11 +59,14 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { useStore } from 'vuex';
 import MusicButton from '@/components/MusicButton.vue';
+import MusicAlert from '@/components/MusicAlert.vue';
 
 const store = useStore();
 
 const newPlaylistName = ref('');
 const errorEmptyPlaylist = ref(false);
+const showAlert = ref(false);
+const playlistToDelete = ref(null);
 
 const playlists = computed(() => store.getters.playlists);
 const loading   = computed(() => store.getters.loading);
@@ -65,22 +88,6 @@ async function createNewPlaylist() {
     }
 }
 
-async function addTrack(playlistId) {
-    const song = {
-        id: Date.now(),
-        name: 'Test Song',
-        artist_name: 'Artist',
-        album_image: null,
-        audio: 'https://example.com/audio.mp3',
-        duration_sec: 180
-    };
-    try {
-        await store.dispatch('addTrackToPlaylist', { playlistId, song });
-    } catch (err) {
-        alert(err.message);
-    }
-}
-
 async function removeTrack(playlistId, trackId) {
     try {
         await store.dispatch('removeTrackFromPlaylist', { playlistId, trackId });
@@ -89,9 +96,31 @@ async function removeTrack(playlistId, trackId) {
     }
 }
 
+function askDelete(id) {
+    playlistToDelete.value = id;
+    showAlert.value = true;
+}
+
+async function confirmDelete() {
+    if (!playlistToDelete.value) return;
+    try {
+        await store.dispatch('deletePlaylist', playlistToDelete.value);
+        closeAlert();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+function closeAlert() {
+    showAlert.value = false;
+    playlistToDelete.value = null;
+}
+
 watch(playlists, (list) => {
     list?.forEach(pl => store.dispatch('fetchPlaylistTracks', pl.id));
 }, { immediate: true });
+
+
 
 onMounted(fetchPlaylists);
 
@@ -136,8 +165,13 @@ small {
     margin-bottom: var(--m-space-16);
 }
 .playlist-btns {
+    margin-top: var(--m-space-16);
     display: inline-grid;
     grid-template-columns: auto auto;
     gap: 8px;
+}
+.delete-track {
+    cursor: pointer;
+    font-size: 16px;
 }
 </style>

@@ -27,6 +27,10 @@ export default {
         addPlaylist(state, playlist) { 
             state.playlists = [playlist, ...state.playlists]; 
         },
+        removePlaylist(state, id) {
+        state.playlists = state.playlists.filter(p => p.id !== id);
+        delete state.tracksByPlaylist[id];
+    }
     },
 
     actions: {
@@ -97,6 +101,22 @@ export default {
                 throw new Error(err.response?.data?.message || err.message || 'Server error');
             }
         },
+
+        async deletePlaylist({ commit }, id) {
+            try {
+                const { data } = await axios.delete(`${API_BASE_URL}/playlists.php`, {
+                    params: { id }
+                });
+                if (data.status === 'success') {
+                    commit('removePlaylist', id);
+                } else {
+                    throw new Error(data.message || 'Delete failed');
+                }
+            } catch (err) {
+                throw new Error(err.response?.data?.message || err.message || 'Server error');
+            }
+        }
+
     },
 
     getters: {

@@ -4,16 +4,14 @@
         <p class="body-text">{{ alertDescription }}</p>
         <div class="alert-btns">
             <music-button
-                typeBtn="btn-hot" text="Close"
-                @click="closeAlert"
-                    
-            ></music-button>
-            <music-button 
-                type-btn="btn-sky" 
-                text="Реєстрація" to="/register"
-            ></music-button>
-            
-
+                v-for="(btn, index) in buttons"
+                :key="index"
+                :type-btn="btn.typeBtn"
+                :text="btn.text"
+                :to="btn.to"
+                :disabled="btn.disabled"
+                @action="btn.action ? btn.action() : null"
+            />
         </div>
     </div>
 </template>
@@ -29,7 +27,23 @@ const props = defineProps({
     alertDescription: {
         type: String,
         required: true
-    }
+    },
+    buttons: {
+    type: Array,
+    required: true,
+    default: () => [
+      {
+        text: 'Close',
+        typeBtn: 'btn-hot',
+        action: () => {}, 
+      },
+      {
+        text: 'Реєстрація',
+        typeBtn: 'btn-sky',
+        to: '/register', 
+      }
+    ]
+  }
 })
 
 const emits = defineEmits(['close']);
