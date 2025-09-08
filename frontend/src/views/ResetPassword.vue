@@ -3,46 +3,55 @@
         <div class="container">
             <div class="form-group">
                 <h2>Відновлення паролю</h2>
-                <form @submit.prevent="handleSubmit">
-                <div class="wrap-inp">
-                    <input 
-                        class="reset-data"  
-                        required
-                        v-model="password" 
-                        placeholder="Новий пароль" 
-                        maxlength="30"
-                        :type="showPassword ? 'text' : 'password'" 
-                    />
-                    <button type="button" class="toggle-pass" aria-label="Show password" @click="showPassword = !showPassword">
-                        <svg v-if="showPassword" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        <svg v-else class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                        </svg>
-                    </button>
+                <div v-if="!isLoading">
+                    <form @submit.prevent="handleSubmit" :class="{ disabled: isFormDisabled }">
+                        <fieldset :disabled="isFormDisabled">
+                            <div class="wrap-inp">
+                                <input 
+                                    class="reset-data"  
+                                    required
+                                    v-model="password" 
+                                    placeholder="Новий пароль" 
+                                    maxlength="30"
+                                    :type="showPassword ? 'text' : 'password'" 
+                                />
+                                <button type="button" class="toggle-pass" aria-label="Show password" @click="showPassword = !showPassword">
+                                    <svg v-if="showPassword" class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg v-else class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <music-button type="submit" typeBtn="btn-fresh" text="Змінити пароль"></music-button>
+                        </fieldset>
+                    </form>
                 </div>
-                <music-button type="submit" typeBtn="btn-fresh" text="Змінити пароль"></music-button>
-                </form>
-                <p class="message-info" v-if="message">{{ message }}</p>
-                <p class="message-info message-info--error" v-if="error">{{ error }}</p>
+                <div v-if="isLoading" class="loader"></div>
+                <h4 class="message-info" v-if="message">{{ message }}</h4>
+                <h4 class="message-info message-info--error" v-if="error">{{ error }}</h4>
             </div>
         </div>
     </main>
 </template>
 
 <script setup>
-import MusicButton from '@/components/MusicButton.vue'
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import MusicButton from '@/components/MusicButton.vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const showPassword = ref(false);
-const password = ref('')
-const message = ref('')
-const error = ref('')
-const token = ref('')
+const isLoading = ref(false);
+const password = ref('');
+const message = ref('');
+const error = ref('');
+const token = ref('');
+const isFormDisabled = ref(false)
 const apiBase = window.location.hostname === 'localhost'
   ? 'http://localhost:8000/api'
   : `${window.location.protocol}//${window.location.hostname}/api`
@@ -65,21 +74,35 @@ async function handleSubmit() {
         return
     }
 
+    isLoading.value = true
+    message.value = ''
+    error.value = ''
+
     try {
         const res = await axios.post(`${apiBase}/reset_password.php`, {
             token: token.value,
             password: password.value
         })
 
-        if (res.data.success) {
-            message.value = res.data.message
-            error.value = ''
-        } else {
-            error.value = res.data.errors.general || 'Помилка'
-            message.value = ''
-        }
+        setTimeout(() => {
+            isLoading.value = false
+
+            if (res.data.success) {
+                message.value = res.data.message
+                error.value = ''
+                isFormDisabled.value = true
+                setTimeout(() => {
+                    router.push('/login')
+                }, 3000)
+            } else {
+                error.value = res.data.errors.general || 'Помилка'
+            }
+        }, 2000)
     } catch (e) {
-        error.value = 'Помилка з’єднання з сервером'
+        setTimeout(() => {
+            isLoading.value = false
+            error.value = 'Помилка з’єднання з сервером'
+        }, 2000)
     }
 }
 
@@ -136,13 +159,58 @@ async function handleSubmit() {
     }
     .message-info {
         margin-top: var(--m-space-16);
-        @include mixins.text-small();
         color: var(--palette-success);
 
     }
     .message-info--error {
         color: var(--palette-error);
     }
+}
+fieldset {
+    border: none;        
+    margin: 0;           
+    padding: 0;          
+    min-width: 0;        
+}
+fieldset:disabled {
+    opacity: 0;
+    display: none;       
+    pointer-events: none; 
+}
+form.disabled {
+    opacity: 0;
+    display: none;       
+    pointer-events: none; 
+}
+
+.loader {
+    width: 100px;
+    aspect-ratio: 1;
+    display: grid;
+    border: 4px solid #0000;
+    border-radius: 50%;
+    border-color: #ccc #0000;
+    animation: l16 1s infinite linear;
+}
+.loader::before,
+.loader::after {    
+    content: "";
+    grid-area: 1/1;
+    margin: 2px;
+    border: inherit;
+    border-radius: 50%;
+}
+.loader::before {
+    border-color: #f03355 #0000;
+    animation: inherit; 
+    animation-duration: .5s;
+    animation-direction: reverse;
+}
+.loader::after {
+    margin: 8px;
+}
+@keyframes l16 { 
+    100%{transform: rotate(1turn)}
 }
 @media (max-width: 576px) {
     .reset {

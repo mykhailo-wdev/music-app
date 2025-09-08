@@ -4,7 +4,7 @@
         <h2 v-else-if="mode === 'register'">Реєстрація</h2>
         <h2 v-else-if="mode === 'forgot'">Відновлення паролю</h2>
 
-        <div v-if="!isLoading && !showSuccessMessage">
+        <div v-if="!isLoading && !showSuccessMessage && !showSuccessForgot">
             <form  @submit.prevent="handleSubmit" autocomplete="on">
                 <div v-if="mode === 'register'" class="form-group">
                     <label for="name">Ім'я</label>
@@ -114,12 +114,17 @@
             <h3>Залишилось зовсім небагато. Для підтвердження рестрації, перейдуть у Вашу елетронну пошту та підтвердіть реєстрацію</h3>
         </div>
 
+        <div v-if="showSuccessForgot" class="success-message">
+            <h3>Ми відправили на Вашу електронну пошту повідомлення з відновленням паролю</h3>
+        </div>
+
     </div>
 </template>
 
 <script setup>
 import MusicButton from './MusicButton.vue';
 import { ref, reactive, computed } from 'vue';
+import { nextTick } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
@@ -133,6 +138,7 @@ const router = useRouter();
 const isLoading = ref(false);
 const showSuccessMessage = ref(false);
 const generalError = ref('');
+const showSuccessForgot = ref(false);
 
 
 const props = defineProps({
@@ -261,16 +267,17 @@ async function handleSubmit() {
                 isLoading.value = false;
                 return;
             }
-        } else if (props.mode === 'forgot') {
-            await store.dispatch('forgotPassword', {
-                email: formData.email
+        }  else if (props.mode === 'forgot') {
+            const success = await store.dispatch('forgotPassword', { 
+                email: formData.email 
             });
 
-            if (store.getters.authStatus === 'success') {
-                isLoading.value = false;
-                showSuccessMessage.value = true;
+            isLoading.value = false;
+
+            if (success) {
+                showSuccessForgot.value = true;
                 setTimeout(() => {
-                    showSuccessMessage.value = false;
+                    showSuccessForgot.value = false;
                     resetForm();
                     router.push('/login');
                 }, 3000);
@@ -278,16 +285,13 @@ async function handleSubmit() {
                 const errObj = store.getters.authError || {};
                 errors.email = errObj.email || '';
                 generalError.value = errObj.general || '';
-                isLoading.value = false;
-                return;
             }
-}
+        }
     } catch (e) {
         console.error(e);
         isLoading.value = false;
     }
 }
-
 
 function resetForm() {
     formData.name = '';

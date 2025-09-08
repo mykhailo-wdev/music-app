@@ -63,7 +63,7 @@ $mail = new PHPMailer(true);
 
 try {
     $mail->isSMTP();
-    $mail->SMTPDebug = 2; 
+    $mail->SMTPDebug = 0; 
     $mail->Debugoutput = 'html';
     $mail->Host       = 'smtp.ukr.net';
     $mail->SMTPAuth   = true;
@@ -82,10 +82,16 @@ try {
     $mail->Subject = 'Відновлення паролю';
     $mail->Body    = "Привіт!<br><br>Щоб змінити пароль, перейдіть за посиланням:<br><a href='$resetLink'>$resetLink</a><br><br>Якщо це не ви, ігноруйте цей лист.";
 
-    var_dump($resetLink);
-    $mail->send();
-
-    echo json_encode(['status' => 'success', 'message' => 'Інструкції надіслані на ваш email']);
+    $mail->send(); 
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Інструкції надіслані на ваш email'
+    ]);
+    exit();
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'errors' => ['general' => 'Лист не надіслано. Помилка: ' . $mail->ErrorInfo]]);
+    echo json_encode([
+        'status' => 'error',
+        'errors' => ['general' => 'Лист не надіслано. Помилка: ' . $mail->ErrorInfo]
+    ]);
+    exit();
 }

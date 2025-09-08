@@ -1,5 +1,16 @@
 <?php
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -38,7 +49,7 @@ try {
         "aud" => "yourdomain.com",
         "iat" => $issuedat_claim,
         "nbf" => $issuedat_claim,
-        "exp" => $issuedat_claim + 3600, // 1 година
+        "exp" => $issuedat_claim + 3600, 
         "data" => ["id" => $user_id]
     ];
     $access_token = JWT::encode($access_token_payload, $secret_key, 'HS256');

@@ -130,7 +130,8 @@ export default {
         auth_error(state, errors) {
             state.status = 'error';
             state.authErrors = errors;
-        }
+        },
+        
     },
 
     actions: {
@@ -201,15 +202,19 @@ export default {
 
                 if (res.data.status === 'success') {
                     commit('setStatus', 'success');
+                    return true;
                 } else {
                     commit('setStatus', 'error');
                     commit('setAuthErrors', res.data.errors || { general: res.data.message });
+                    return false; 
                 }
             } catch (err) {
                 commit('setStatus', 'error');
                 commit('setAuthErrors', { general: 'Помилка з’єднання з сервером' });
+                return false; 
             }
         },
+
 
         async verifyEmail({ commit }, token) {
             commit('auth_request');
@@ -243,3 +248,5 @@ export default {
         authError: (state) => state.authErrors,
     }
 };
+
+
