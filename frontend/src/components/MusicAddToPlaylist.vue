@@ -69,13 +69,11 @@ const selectedId = ref(null);
 const newName = ref('');
 
 const playlists = computed(() => store.getters['playlists']);
-const currentSong = computed(() => store.getters.currentSong); 
+const currentSong = computed(() => store.getters['currentSong']); 
 
 function open() {
     openModal.value = true;
-    if (!playlists.value.length) {
-        store.dispatch('fetchPlaylists');
-    }
+    store.dispatch('fetchPlaylists');
 }
 function close() {
     openModal.value = false;
@@ -86,6 +84,8 @@ async function create() {
     if (!newName.value.trim()) return;
         try {
             await store.dispatch('createPlaylist', newName.value.trim());
+            const last = playlists.value[0];
+            if (last) selectedId.value = last.id;
             newName.value = '';
         } catch(e) { 
             alert(e.message); 
@@ -95,7 +95,7 @@ async function create() {
         if (!selectedId.value || !currentSong.value) return;
         try {
             await store.dispatch('addTrackToPlaylist', { playlistId: selectedId.value, song: currentSong.value });
-                close();
+            closeModal();
             } catch(e) { alert(e.message); 
         }
     }
@@ -106,6 +106,8 @@ onMounted(() => {
 
 function closeModal() {
     openModal.value = false;
+    selectedId.value = null;
+    newName.value = '';
 }
 </script>
 

@@ -3,29 +3,18 @@
         <transition name="slide-fade">
             <music-alert
                 v-if="showAlert"
-                alertTitle="Ви дійсно хочете видалити цей плейлист"
-                alertDescription="Цією дією Ви підтверджуєте його видалення назавжди"
-                :buttons="[
-                    {
-                        text: 'Закрити',
-                        typeBtn: 'btn-hot',
-                        action: () => closeAlert()
-                    },
-                    {
-                        text: 'Видалити',
-                        typeBtn: 'btn-fresh',
-                        action: () => confirmDelete()
-                    }
-                ]"
+                :alertTitle="alertConfig.title"
+                :alertDescription="alertConfig.description"
+                :buttons="alertConfig.buttons"
             ></music-alert>
         </transition>
 
         <h1>Мої плейлисти</h1>
 
     <div class="new-playlist">
-        <input v-model="newPlaylistName" @keypress.enter="createNewPlaylist" placeholder="Нова назва плейлиста" />
+        <input v-model="newPlaylistName" @keyup.enter="createNewPlaylist" placeholder="Нова назва плейлиста" />
         <music-button @click="createNewPlaylist" type-btn="btn-sky" text="Створити"></music-button>
-        <p v-if="errorEmptyPlaylist">Поле не може бути пусте. Введіть назву плейлиста</p>
+        <p v-if="errorEmptyPlaylist" class="error">Поле не може бути пустим. Введіть назву плейлиста</p>
     </div>
 
     <div v-if="loading">Завантаження плейлистів...</div>
@@ -43,7 +32,11 @@
                 </li>
             </ul>
             <div class="playlist-btns">
-                <music-button type-btn="btn-fresh" text="Слухати плейлист"></music-button>
+                <music-button 
+                       type-btn="btn-fresh" 
+                       text="Слухати плейлист" 
+                       @action="() => playPlaylist(pl.id)"
+                  ></music-button>
                 <music-button type-btn="btn-hot" text="Видалити" @action="askDelete(pl.id)"></music-button>
             </div>
         </div>
@@ -68,23 +61,57 @@ const errorEmptyPlaylist = ref(false);
 const showAlert = ref(false);
 const playlistToDelete = ref(null);
 
+const alertConfig = ref({
+    title: '',
+    description: '',
+    buttons: []
+});
+
 const playlists = computed(() => store.getters.playlists);
 const loading   = computed(() => store.getters.loading);
 const error     = computed(() => store.getters.error);
 
 const tracksOf = (playlistId) => store.getters.tracksOf(playlistId);
 
+function openAlert(config) {
+    alertConfig.value = config;
+    showAlert.value = true;
+}
+
 async function fetchPlaylists() {
-    await store.dispatch('fetchPlaylists');
+    try {
+        await store.dispatch('fetchPlaylists');
+    } catch (err) {
+        openAlert({
+            title: 'Помилка',
+            description: 'Не вдалося завантажити плейлисти',
+            buttons: [{ text: 'OK', typeBtn: 'btn-hot', action: closeAlert }]
+        });
+    }
 }
 
 async function createNewPlaylist() {
-    if (!newPlaylistName.value.trim()) return errorEmptyPlaylist.value = true;
+    if (!newPlaylistName.value.trim()) {
+        errorEmptyPlaylist.value = true;
+        return;
+    }
+    errorEmptyPlaylist.value = false;
+
     try {
-        await store.dispatch('createPlaylist', newPlaylistName.value.trim());
-        newPlaylistName.value = '';
+        const name = newPlaylistName.value.trim();
+        await store.dispatch('createPlaylist', name);
+            newPlaylistName.value = '';
+            openAlert({
+            title: 'Успіх',
+            description: `Плейлист "${name}" створено!`,
+            buttons: [{ text: 'OK', typeBtn: 'btn-fresh', action: closeAlert }]
+        });
     } catch (err) {
-        alert(err.message);
+        openAlert({
+            title: 'Помилка',
+            description: 'Не вдалося створити плейлист',
+            buttons: [{ text: 'Закрити', typeBtn: 'btn-hot', action: closeAlert }]
+        });
     }
 }
 
@@ -92,23 +119,40 @@ async function removeTrack(playlistId, trackId) {
     try {
         await store.dispatch('removeTrackFromPlaylist', { playlistId, trackId });
     } catch (err) {
-        alert(err.message);
+        openAlert({
+            title: 'Помилка',
+            description: 'Не вдалося видалити трек',
+            buttons: [{ text: 'OK', typeBtn: 'btn-hot', action: closeAlert }]
+        });
+    }
+}
+
+async function confirmDelete() {
+    if (!playlistToDelete.value) return;
+
+    try {
+        await store.dispatch('deletePlaylist', playlistToDelete.value);
+    } catch (err) {
+        openAlert({
+            title: 'Помилка',
+            description: 'Не вдалося видалити плейлист',
+            buttons: [{ text: 'OK', typeBtn: 'btn-hot', action: closeAlert }]
+        });
+    } finally {
+        closeAlert();
     }
 }
 
 function askDelete(id) {
     playlistToDelete.value = id;
-    showAlert.value = true;
-}
-
-async function confirmDelete() {
-    if (!playlistToDelete.value) return;
-    try {
-        await store.dispatch('deletePlaylist', playlistToDelete.value);
-        closeAlert();
-    } catch (err) {
-        alert(err.message);
-    }
+    openAlert({
+        title: 'Ви дійсно хочете видалити цей плейлист?',
+        description: 'Цією дією Ви підтверджуєте його видалення назавжди',
+        buttons: [
+            { text: 'Закрити', typeBtn: 'btn-hot', action: closeAlert },
+            { text: 'Видалити', typeBtn: 'btn-fresh', action: confirmDelete }
+        ]
+    });
 }
 
 function closeAlert() {
@@ -116,15 +160,35 @@ function closeAlert() {
     playlistToDelete.value = null;
 }
 
+// слухати плейлист (опціонально, якщо є плеєр)
+function playPlaylist(playlistId) {
+    const tracks = tracksOf(playlistId);
+    if (!tracks.length) {
+        openAlert({
+            title: 'Порожній плейлист',
+            description: 'У цьому плейлисті ще немає треків',
+            buttons: [{ text: 'OK', typeBtn: 'btn-hot', action: closeAlert }]
+        });
+        return;
+    }
+    store.dispatch('player/startPlaylist', { playlistId, tracks });
+}
+
+
 watch(playlists, (list) => {
-    list?.forEach(pl => store.dispatch('fetchPlaylistTracks', pl.id));
-}, { immediate: true });
-
-
+    if (list && list.length) {
+        list.forEach((pl) => store.dispatch('fetchPlaylistTracks', pl.id));
+    }
+},
+    { 
+        immediate: true, 
+        deep: false 
+    }
+);
 
 onMounted(fetchPlaylists);
-
 </script>
+
 
 
 <style scoped lang="scss">
