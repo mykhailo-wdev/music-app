@@ -28,9 +28,9 @@ export default {
             state.playlists = [playlist, ...state.playlists]; 
         },
         removePlaylist(state, id) {
-        state.playlists = state.playlists.filter(p => p.id !== id);
-        delete state.tracksByPlaylist[id];
-    }
+            state.playlists = state.playlists.filter(p => p.id !== id);
+            delete state.tracksByPlaylist[id];
+        }
     },
 
     actions: {
@@ -41,62 +41,64 @@ export default {
             const { data } = await axios.get(`${API_BASE_URL}/playlists.php`);
             if (data.status === 'success') commit('setPlaylists', data.data || []);
             else commit('setError', data.message || 'Error fetching playlists');
-        } catch (err) {
-            commit('setError', err.response?.data?.message || err.message || 'Server error');
-        } finally {
-            commit('setLoading', false);
-        }
+            } catch (err) {
+                commit('setError', err.response?.data?.message || err.message || 'Server error');
+            } finally {
+                commit('setLoading', false);
+            }
         },
 
         async createPlaylist({ commit }, name) {
-        try {
-            const { data } = await axios.post(`${API_BASE_URL}/playlists.php`, { name });
-            if (data.status === 'success') commit('addPlaylist', data.data);
-            else throw new Error(data.message || 'Failed to create playlist');
-        } catch (err) {
-            throw new Error(err.response?.data?.message || err.message || 'Server error');
-        }
+            try {
+                const { data } = await axios.post(`${API_BASE_URL}/playlists.php`, { name });
+                if (data.status === 'success') commit('addPlaylist', data.data);
+                else throw new Error(data.message || 'Failed to create playlist');
+            } catch (err) {
+                throw new Error(err.response?.data?.message || err.message || 'Server error');
+            }
         },
 
         async fetchPlaylistTracks({ commit }, playlistId) {
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/playlist_tracks.php`, {
-            params: { playlist_id: playlistId },
-            });
-            if (data.status === 'success') commit('setPlaylistTracks', { playlistId, tracks: data.data || [] });
-            else throw new Error(data.message || 'Failed to load tracks');
-        } catch (err) {
-            throw new Error(err.response?.data?.message || err.message || 'Server error');
-        }
+            try {
+                const { data } = await axios.get(`${API_BASE_URL}/playlist_tracks.php`, {
+                    params: { playlist_id: playlistId },
+                });
+                if (data.status === 'success') {
+                    commit('setPlaylistTracks', { playlistId, tracks: data.data || [] });
+                } else {
+                    throw new Error(data.message || 'Failed to load tracks');
+                }
+            } catch (err) {
+                throw new Error(err.response?.data?.message || err.message || 'Server error');
+            }
         },
 
         async addTrackToPlaylist({ dispatch }, { playlistId, song }) {
-        const payload = {
-            playlist_id: playlistId,
-            track_source_id: song.id,
-            track_name: song.name,
-            artist_name: song.artist_name,
-            album_image: song.album_image || null,
-            audio_url: song.audio,
-            duration_sec: song.duration_sec || null,
-        };
-        try {
-            const { data } = await axios.post(`${API_BASE_URL}/playlist_add_track.php`, payload);
-            if (data.status !== 'success') throw new Error(data.message || 'Add failed');
-            await dispatch('fetchPlaylistTracks', playlistId);
-        } catch (err) {
-            throw new Error(err.response?.data?.message || err.message || 'Server error');
-        }
+            const payload = {
+                playlist_id: playlistId,
+                track_source_id: song.id,
+                track_name: song.name,
+                artist_name: song.artist_name,
+                album_image: song.album_image || null,
+                audio_url: song.audio,
+                duration_sec: song.duration_sec || null,
+            };
+            try {
+                const { data } = await axios.post(`${API_BASE_URL}/playlist_tracks.php`, payload);
+                if (data.status !== 'success') throw new Error(data.message || 'Add failed');
+                await dispatch('fetchPlaylistTracks', playlistId);
+            } catch (err) {
+                throw new Error(err.response?.data?.message || err.message || 'Server error');
+            }
         },
 
         async removeTrackFromPlaylist({ dispatch }, { playlistId, trackId }) {
-        try {
-            const { data } = await axios.post(`${API_BASE_URL}/playlist_remove_track.php`, {
-                playlist_id: playlistId,
-                track_id: trackId,
-            });
-            if (data.status !== 'success') throw new Error(data.message || 'Remove failed');
-            await dispatch('fetchPlaylistTracks', playlistId);
+            try {
+                const { data } = await axios.delete(`${API_BASE_URL}/playlist_tracks.php`, {
+                    data: { playlist_id: playlistId, track_id: trackId }, 
+                });
+                if (data.status !== 'success') throw new Error(data.message || 'Remove failed');
+                await dispatch('fetchPlaylistTracks', playlistId);
             } catch (err) {
                 throw new Error(err.response?.data?.message || err.message || 'Server error');
             }

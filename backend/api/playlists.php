@@ -37,15 +37,22 @@ if ($method === 'POST') {
     }
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO playlists (user_id, name) VALUES (?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO playlists (user_id, name, created_at, updated_at) VALUES (?, ?, NOW(), NOW())");
         $stmt->execute([$userId, $name]);
+
+        $id = (int)$pdo->lastInsertId();
+
+        $stmt = $pdo->prepare("SELECT id, name, created_at, updated_at 
+                               FROM playlists 
+                               WHERE id = ? AND user_id = ?");
+        $stmt->execute([$id, $userId]);
+        $playlist = $stmt->fetch(PDO::FETCH_ASSOC);
+
         echo json_encode([
             'status' => 'success',
-            'data' => [
-                'id' => (int)$pdo->lastInsertId(),
-                'name' => $name
-            ]
+            'data' => $playlist
         ]);
+        
     } catch (PDOException $e) {
         if ($e->getCode() === '23000') { 
             http_response_code(409);
