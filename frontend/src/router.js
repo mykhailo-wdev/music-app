@@ -57,7 +57,7 @@ const router =  createRouter({
         {
             path: '/playlists',
             component: PlayList,
-            meta: { title: 'Плейлисти - Pulsebox' }
+            meta: { title: 'Плейлисти - Pulsebox', guestOnly: true }
         },
         {   path: '/:pathMatch(.*)*', 
             name: 'NotFound', 
