@@ -23,7 +23,7 @@ axios.interceptors.response.use(
     async (error) => {
         const original = error.config;
         if (!original) return Promise.reject(error);
-        if (original.url && original.url.includes('/refresh_roken.php')) {
+        if (original.url && original.url.includes('/refresh_token.php')) {
             return Promise.reject(error);
         }
 
@@ -55,7 +55,7 @@ axios.interceptors.response.use(
         }
 
         try {
-            const { data } = await axios.post('/refresh_roken.php', { refresh_token: refresh }, {
+            const { data } = await axios.post('/refresh_token.php', { refresh_token: refresh }, {
                 headers: { 'Content-Type': 'application/json' },
             });
 

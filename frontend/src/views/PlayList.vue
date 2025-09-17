@@ -45,6 +45,10 @@
         <div v-else>
             <h4>Плейлистів ще немає.</h4>
         </div>
+
+        <music-player></music-player>
+
+
     </div>
 </template>
 
@@ -53,6 +57,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useStore } from 'vuex';
 import MusicButton from '@/components/MusicButton.vue';
 import MusicAlert from '@/components/MusicAlert.vue';
+import MusicPlayer from '@/components/MusicPlayer.vue';
 
 const store = useStore();
 
@@ -171,7 +176,7 @@ function playPlaylist(playlistId) {
         });
         return;
     }
-    store.dispatch('player/startPlaylist', { playlistId, tracks });
+    store.dispatch('startPlaylist', { playlistId, tracks });
 }
 
 

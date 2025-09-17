@@ -8,7 +8,7 @@
             <form  @submit.prevent="handleSubmit" autocomplete="on">
                 <div v-if="mode === 'register'" class="form-group">
                     <label for="name">Ім'я</label>
-                    <input v-model="formData.name" id="name" type="text" required placeholder="Введіть Ваше Ім'я"  maxlength="30"/>
+                    <input v-model="formData.name" id="name" type="text" required placeholder="Введіть Ваше Ім'я"  maxlength="40"/>
                     <small v-if="errors.name" class="error-text">{{ errors.name }}</small>
                 </div>
 
