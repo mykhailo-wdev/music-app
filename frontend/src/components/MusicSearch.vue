@@ -236,5 +236,12 @@ function closeAlert() {
         color: var(--palette-white);
     }
 }
+@media(max-width: 576px) {
+    .search-wrap {
+        .search-row {
+            margin-top: 0;
+        }
+    }
+}
 
 </style>

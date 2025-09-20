@@ -165,7 +165,6 @@ watch(currentTrack, async () => {
     }
 });
 
-
 function formatTime(sec) {
     const minutes = Math.floor(sec / 60) || 0;
     const seconds = Math.floor(sec % 60) || 0;
@@ -182,8 +181,6 @@ watch(playing, (val) => {
         });
     }
 });
-
-
 
 onMounted(async () => {
     await nextTick(); 
@@ -222,7 +219,6 @@ onMounted(async () => {
     max-width: 400px;
     margin: 0 auto;
 }
-
 .btn-close {
     cursor: pointer;
     position: absolute;
@@ -232,16 +228,13 @@ onMounted(async () => {
     font-weight: 600;
     color: var(--palette-dark);
 }
-
 .close {
     display: none;
 }
-
 .controls-repeat.active, 
 .controls-random.active {
     color: var(--palette-violet);
 }
-
 .layout {
     display: flex;
     flex-direction: column;
@@ -250,7 +243,6 @@ onMounted(async () => {
     height: 100vh;
     height: 100dvh;
 }
-
 .player {
     width: 100%;
     background-color: var(--palette-silver);
@@ -259,7 +251,6 @@ onMounted(async () => {
     position: relative;
     padding: 160px 16px 16px;
 }
-
 .music-image {
     object-fit: cover;
     object-position: center;
@@ -274,20 +265,17 @@ onMounted(async () => {
     height: 230px;
     box-shadow: 0px 10px 40px 0px rgba(76, 70, 124, 0.5);
 }
-
 .controls {
     margin-top: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-
 .controls-second {
     display: grid;
     grid-template-columns: repeat(3, 26px);
     gap: 24px;
 }
-
 .music-autor, .music-name, .music-time, .time-curr {
     @include mixins.body-text();
     font-weight: 700;
@@ -296,16 +284,13 @@ onMounted(async () => {
     margin-top: 8px;
     color: var(--palette-violet);
 }
-
 .music-time {
     text-align: right;
 }
-
 .time-curr {
     margin-top: 8px;
     color: var(--palette-dark);
 }
-
 .progress-track {
     appearance: none;
     -webkit-appearance: none;
@@ -347,12 +332,10 @@ onMounted(async () => {
         color: transparent;
     }
 }
-
 .controls-play, .controls-heart, .controls-next, .controls-prev, .controls-repeat, .controls-random {
     cursor: pointer;
     display: block;
 }
-
 .controls-item {
     transition: all 0.3s ease-in-out;
     transform-origin: center;
@@ -385,7 +368,6 @@ onMounted(async () => {
         }
     }
 }
-
 .controls-heart, .controls-next, .controls-prev, .controls-repeat, .controls-random {
     width: 26px;
     height: 26px;
@@ -394,13 +376,11 @@ onMounted(async () => {
     position: relative;
     z-index: 10;
 }
-
 .controls-play {
     width: 75px;
     height: 75px;
     filter: drop-shadow(0 11px 6px rgba(172, 184, 204, 0.45));
 }
-
 .progress-time {
     margin-top: 16px;
     display: flex;
@@ -408,12 +388,18 @@ onMounted(async () => {
     align-items: center;
     width: 100%;
 }
-
 .controls-bottom {
     display: grid;
     grid-template-columns: repeat(2, 40px);
     gap: 16px;
     align-items: center;
+}
+
+@media(max-width: 576px) {
+    .music-image {
+        top: -14px;
+        height: 180px;
+    }
 }
 
 </style>
