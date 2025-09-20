@@ -7,7 +7,39 @@
                 </div>
                 <div class="header-logo" v-else-if="route.path === '/player'">
                     <router-link to="playlists">
-                        <img :src="require('@/assets/images/playlists.svg')" alt="Playlists" width="120" height="26">
+                        <svg width="172" height="32" viewBox="0 0 172 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t2 d2">
+                            <title id="t2">Your Playlists</title>
+                            <g transform="translate(6,6)" stroke-width="2" stroke-linecap="round">
+                                <path d="M0 20V10" stroke="#0D47A1">
+                                <animate attributeName="d"
+                                        values="M0 20V20; M0 20V6; M0 20V14; M0 20V10; M0 20V20"
+                                        dur="1.2s" repeatCount="indefinite"/>
+                                </path>
+                                <path d="M6 20V6" stroke="#1565C0">
+                                <animate attributeName="d"
+                                        values="M6 20V20; M6 20V7; M6 20V14; M6 20V6; M6 20V20"
+                                        dur="1s" repeatCount="indefinite"/>
+                                </path>
+                                <path d="M12 20V13" stroke="#1976D2">
+                                <animate attributeName="d"
+                                        values="M12 20V20; M12 20V8; M12 20V15; M12 20V13; M12 20V20"
+                                        dur="0.9s" repeatCount="indefinite"/>
+                                </path>
+                                <path d="M18 20V8" stroke="#1E88E5">
+                                <animate attributeName="d"
+                                        values="M18 20V20; M18 20V6; M18 20V12; M18 20V8; M18 20V20"
+                                        dur="1.4s" repeatCount="indefinite"/>
+                                </path>
+                                <path d="M24 20V15" stroke="#2196F3">
+                                <animate attributeName="d"
+                                        values="M24 20V20; M24 20V9; M24 20V14; M24 20V15; M24 20V20"
+                                        dur="1.1s" repeatCount="indefinite"/>
+                                </path>
+                            </g>
+                            <path d="M40 6V26" stroke="currentColor" stroke-width="1" opacity=".5"/>
+                            <text x="48" y="21" font-size="16" font-family="Inter, system-ui, Segoe UI, Roboto, Arial"
+                                    font-weight="900" letter-spacing=".2" fill="currentColor">Your Playlists</text>
+                        </svg>
                     </router-link>
                 </div>
                 <div class="header-logo" v-else>
@@ -89,8 +121,7 @@ async function logout() {
             flex-direction: column;
         }
         .header-logo {
-            width: 100%;
-            max-width: 80px;
+            width: auto;
             margin: 0 auto;
         }
         .header-btns {

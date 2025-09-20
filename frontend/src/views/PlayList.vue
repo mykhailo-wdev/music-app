@@ -8,47 +8,43 @@
                 :buttons="alertConfig.buttons"
             ></music-alert>
         </transition>
-
-        <h1>Мої плейлисти</h1>
-
+        <h2>Мої плейлисти</h2>
     <div class="new-playlist">
         <input v-model="newPlaylistName" @keyup.enter="createNewPlaylist" placeholder="Нова назва плейлиста" />
         <music-button @click="createNewPlaylist" type-btn="btn-sky" text="Створити"></music-button>
         <p v-if="errorEmptyPlaylist" class="error">Поле не може бути пустим. Введіть назву плейлиста</p>
     </div>
-
     <div v-if="loading">Завантаження плейлистів...</div>
     <div v-if="error" class="error">{{ error }}</div>
-
     <div v-if="playlists.length > 0" class="playlists">
         <div v-for="pl in playlists" :key="pl.id" class="playlist-card">
-            <h3>{{ pl.name }}</h3>
-            <small>Оновлено: {{ pl.updated_at }}</small>
-
-            <ul>
-                <li v-for="track in tracksOf(pl.id)" :key="track.id">
-                    {{ track.track_name }} – {{ track.artist_name }}
-                    <button class="delete-track" @click="removeTrack(pl.id, track.id)">❌</button>
+            <div class="playlist-head">
+                <h4>{{ pl.name }}</h4>
+                <small>Оновлено: {{ pl.updated_at }}</small>
+                <br>
+                <div class="playlist-btns">
+                    <music-button 
+                        type-btn="btn-fresh" 
+                        text="Слухати" 
+                        @action="() => playPlaylist(pl.id)"
+                    ></music-button>
+                    <music-button type-btn="btn-hot" text="Видалити" @action="askDelete(pl.id)"></music-button>
+                </div>
+            </div>
+            <ul class="track-list">
+                <li class="track-item" v-for="(track, idx) in tracksOf(pl.id)" :key="track.id">
+                    <span>{{ idx + 1 }}.</span>
+                    {{ toUpperCaseFirstLetter(track.track_name) }} – {{ toUpperCaseFirstLetter(track.artist_name) }}
+                    |
+                    <button class="delete-track" @click="removeTrack(pl.id, track.id)">❌</button> 
                 </li>
             </ul>
-            <div class="playlist-btns">
-                <music-button 
-                       type-btn="btn-fresh" 
-                       text="Слухати плейлист" 
-                       @action="() => playPlaylist(pl.id)"
-                  ></music-button>
-                <music-button type-btn="btn-hot" text="Видалити" @action="askDelete(pl.id)"></music-button>
-            </div>
         </div>
     </div>
-
         <div v-else>
             <h4>Плейлистів ще немає.</h4>
         </div>
-
         <music-player></music-player>
-
-
     </div>
 </template>
 
@@ -65,6 +61,7 @@ const newPlaylistName = ref('');
 const errorEmptyPlaylist = ref(false);
 const showAlert = ref(false);
 const playlistToDelete = ref(null);
+
 
 const alertConfig = ref({
     title: '',
@@ -165,7 +162,6 @@ function closeAlert() {
     playlistToDelete.value = null;
 }
 
-// слухати плейлист (опціонально, якщо є плеєр)
 function playPlaylist(playlistId) {
     const tracks = tracksOf(playlistId);
     if (!tracks.length) {
@@ -192,6 +188,10 @@ watch(playlists, (list) => {
 );
 
 onMounted(fetchPlaylists);
+
+function toUpperCaseFirstLetter(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+}
 </script>
 
 
@@ -201,7 +201,7 @@ onMounted(fetchPlaylists);
 .container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 1rem;
+    padding: 16px;
 }
 .new-playlist {
     display: grid;
@@ -213,6 +213,7 @@ onMounted(fetchPlaylists);
         border: 1px solid var(--palette-stroke);
         text-indent: 16px;
         @include mixins.text-small();
+        border-radius: 8px;
     }
 }
 .playlists {
@@ -223,6 +224,13 @@ onMounted(fetchPlaylists);
 .playlist-card {
     border: 1px solid var(--palette-stroke);
     border-radius: 8px;
+    max-height: 280px;
+    overflow-y: scroll;
+}
+.playlist-head {
+    position: sticky;
+    top: 0;
+    background-color: var(--palette-white);
     padding: var(--m-space-16);
 }
 .error {
@@ -231,10 +239,9 @@ onMounted(fetchPlaylists);
 small {
     @include mixins.text-small();
     display: inline-block;
-    margin-bottom: var(--m-space-16);
 }
 .playlist-btns {
-    margin-top: var(--m-space-16);
+    margin-top: 8px;
     display: inline-grid;
     grid-template-columns: auto auto;
     gap: 8px;
@@ -242,5 +249,13 @@ small {
 .delete-track {
     cursor: pointer;
     font-size: 16px;
+}
+.track-list {
+    padding: 0 8px;  
+}
+.track-item {
+    padding: 8px;
+    border-top: 1px solid var(--palette-stroke);
+    @include mixins.text-small();
 }
 </style>

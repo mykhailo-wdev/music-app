@@ -126,7 +126,7 @@ function closeModal() {
     background:var(--palette-white); 
     padding: var(--m-space-16); 
     border-radius: 12px; 
-    width: 100%;
+    width: 95%;
     max-width: 420px;
 }
 .close-row {
