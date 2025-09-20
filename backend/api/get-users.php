@@ -1,5 +1,6 @@
 <?php
-header("Access-Control-Allow-Origin: *");
+// get-users.php
+require_once __DIR__ . '/cors.php';
 header("Content-Type: application/json");
 
 require 'db.php';
