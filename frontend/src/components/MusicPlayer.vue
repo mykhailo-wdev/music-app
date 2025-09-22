@@ -401,5 +401,4 @@ onMounted(async () => {
         height: 180px;
     }
 }
-
 </style>

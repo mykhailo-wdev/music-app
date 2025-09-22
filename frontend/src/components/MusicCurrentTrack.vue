@@ -245,23 +245,22 @@ h4 {
 }
 .loader {
     margin-top: var(--m-space-16);
-    display: inline-grid;
-    width: 80px;
-    aspect-ratio: 2;
-    box-sizing: content-box;
-    border-bottom: 8px solid #0000; 
-    background: linear-gradient(90deg,#0B486B 50%,#C02942 0) 50% 100%/52% 8px border-box repeat-x;
-    animation: l8-0 1s linear infinite;
-    &::before {
-        content:"";
-        margin: 0 25%;
-        border-radius: 50%;
-        background: repeating-conic-gradient(#C02942 0 60deg,#0B486B 0 120deg);
-        animation: l8-1 1s linear infinite;
-    }
+    width: 40px;
+    aspect-ratio: .75;
+    --c: no-repeat linear-gradient(var(--palette-darkviolet) 0 0);
+    background: 
+        var(--c) 0%   50%,
+        var(--c) 50%  50%,
+        var(--c) 100% 50%;
+    background-size: 20% 50%;
+    animation: l6 1s infinite linear;
 }
-@keyframes l8-0 {to{background-position: -58% 100%}}
-@keyframes l8-1 {to{rotate: 120deg}}
+@keyframes l6 {
+    20% {background-position: 0% 0%  ,50% 50% ,100% 50% }
+    40% {background-position: 0% 100%,50% 0%  ,100% 50% }
+    60% {background-position: 0% 50% ,50% 100%,100% 0%  }
+    80% {background-position: 0% 50% ,50% 50% ,100% 100%}
+}
 
 .playlist-btn {
     margin-top: var(--m-space-16);
