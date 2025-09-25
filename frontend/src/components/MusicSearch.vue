@@ -34,7 +34,7 @@
             <music-button  
                 type-btn="btn-sky" 
                 text="Пошук" 
-                :disabled="isLoading" 
+                :disabled="!searchValue.trim()" 
                 @action="searchMusic">
             </music-button>
         </div>

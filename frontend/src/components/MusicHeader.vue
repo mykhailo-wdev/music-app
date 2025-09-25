@@ -116,7 +116,7 @@ async function logout() {
 
 @media (max-width: 576px) {
     .header-wrap {
-        height: 120px;
+        height: 130px;
         .header-row {
             flex-direction: column;
         }
