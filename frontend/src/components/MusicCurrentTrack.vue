@@ -178,7 +178,7 @@ h4 {
     align-items: center;
     gap: 8px;
     background-color: var(--palette-light);
-    border-radius: 30px;
+    border-radius: 15px;
     padding: 10px 20px;
     box-shadow: 0 0 10px var(--palette-darkred);
     button {

@@ -1,9 +1,10 @@
 <template>
     <div class="overlay" :class="{ close : !isActive }">
-        <div class="btn-close" @click="closeModal">&times;</div>
+        <div class="btn-close" @click="closeModal">✖</div>
         <div class="container">
             <div class="layout">
                 <div class="player" v-if="currentTrack">
+                    <div class="btn-close--mobile" @click="closeModal">✖</div>
                     <img class="music-image" :src="currentTrack.album_image" :alt="currentTrack.track_name">
                     <div class="controls">
                         <div class="controls-second">
@@ -49,7 +50,7 @@
                         <div class="progress-info">
                             <div class="info-left">
                                 <p class="music-autor">{{ currentTrack.artist_name }}</p>
-                                <p class="music-name">{{ currentTrack.track_name }}</p>
+                                <p class="music-name">{{ truncate(currentTrack.track_name, 20) }}</p>
                             </div>
                             <div class="info-right">
                                 <p class="music-time">{{ formatTime(duration) }}</p>
@@ -149,6 +150,10 @@ function seek() {
     }
 }
 
+function truncate(str, limit = 20) {
+    return str.length > limit ? str.slice(0, limit) + "..." : str
+}
+
 function toggleRandom() {
     store.commit('toggleRandom');
 }
@@ -219,16 +224,36 @@ onMounted(async () => {
     max-width: 400px;
     margin: 0 auto;
 }
-.btn-close {
+.btn-close, .btn-close--mobile {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    border: none;
+    background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000);
+    color: var(--palette-white);
+    font-size: 18px;;
+    line-height: 25px;
+    text-align: center;
     cursor: pointer;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+    overflow: hidden;
     position: absolute;
     right: 5%;
     top: 5%;
-    font-size: 24px;
     font-weight: 600;
-    color: var(--palette-dark);
+    z-index: 25;
+    &:hover {
+        transform: scale(1.01);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+    }
+    &:active {
+        transform: scale(0.95);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+    }
 }
-.close {
+.close, .btn-close--mobile {
     display: none;
 }
 .controls-repeat.active, 
@@ -270,10 +295,12 @@ onMounted(async () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    z-index: 20;
 }
 .controls-second {
     display: grid;
-    grid-template-columns: repeat(3, 26px);
+    grid-template-columns: repeat(3, 40px);
     gap: 24px;
 }
 .music-autor, .music-name, .music-time, .time-curr {
@@ -396,9 +423,29 @@ onMounted(async () => {
 }
 
 @media(max-width: 576px) {
-    .music-image {
-        top: -14px;
-        height: 180px;
+    .player {
+        position: relative;
     }
+    .btn-close {
+        display: none;
+    }
+    .btn-close--mobile {
+        display: block;
+        right: 10px;
+        top: 10px;
+    }
+    .music-image {
+        top: 0;
+        height: 180px;
+        width: 100%;
+        border-radius: 15px 15px 0 0;
+        -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-size: 100% 100%;
+        mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        mask-repeat: no-repeat;
+        mask-size: 100% 100%;
+    }
+
 }
 </style>

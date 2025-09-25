@@ -37,6 +37,7 @@ export default {
         async fetchPlaylists({ commit }) {
         commit('setLoading', true);
         commit('setError', null);
+        const start = Date.now();
         try {
             const { data } = await axios.get(`${API_BASE_URL}/playlists.php`);
             if (data.status === 'success') commit('setPlaylists', data.data || []);
@@ -44,7 +45,11 @@ export default {
             } catch (err) {
                 commit('setError', err.response?.data?.message || err.message || 'Server error');
             } finally {
-                commit('setLoading', false);
+                const elapsed = Date.now() - start; 
+                const delay = Math.max(0, 2000 - elapsed); 
+                setTimeout(() => {
+                    commit('setLoading', false);
+                }, delay);
             }
         },
 
