@@ -3,6 +3,7 @@ import search from "./modules/search";
 import auth from "./modules/auth";
 import playlist from "./modules/playlist";
 import player from './modules/player';
+import favorites from './modules/favorites';
 
 
 export default createStore({
@@ -10,6 +11,7 @@ export default createStore({
         search,
         auth,
         playlist,
-        player
+        player,
+        favorites
     }
 })

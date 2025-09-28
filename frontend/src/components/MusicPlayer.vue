@@ -9,7 +9,13 @@
                     <div class="controls">
                         <div class="controls-second">
                             <div class="controls-item">
-                                <svg class="controls-heart" role="button" aria-label="like current track" width="26" height="23" viewBox="0 0 26 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg 
+                                    class="controls-heart"
+                                    :class="{ active: isFav(currentTrack.id) }"
+                                    @click="toggleFav(currentTrack.id)"
+                                    role="button" 
+                                    aria-label="like current track" 
+                                    width="26" height="23" viewBox="0 0 26 23" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M25.9953 6.97384C25.9197 4.53874 24.7142 2.53726 23.0089 1.31365C20.8154 -0.261935 17.7912 -0.551012 15.2775 1.16801C14.4478 1.73734 13.6714 2.52513 13.0001 3.56007C12.3288 2.52513 11.5536 1.73734 10.7228 1.16911C8.20904 -0.551012 5.18597 -0.261935 2.99134 1.31475C1.2848 2.53837 0.0805383 4.53985 0.00490233 6.97494C-0.0364611 8.26807 0.176265 9.71125 0.93617 11.171C2.1298 13.4626 7.7375 18.5579 12.9564 22.9581L12.9977 23L13.0001 22.9978L13.0025 23L13.045 22.9581C18.2627 18.559 23.8692 13.4637 25.064 11.171C25.8251 9.71125 26.0355 8.26696 25.9953 6.97384Z" fill="currentColor"/>
                                 </svg>
                             </div>
@@ -176,6 +182,16 @@ function formatTime(sec) {
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+
+const isFav = (trackId) => store.getters["isFavorite"](trackId);
+const toggleFav = (trackId) => {
+    if (!store.getters.isAuthenticated) {
+        alert("Увійдіть, щоб додати трек в обране");
+        return;
+    }
+    store.dispatch("toggleFavorite", trackId);
+};
+
 watch(playing, (val) => {
     if (!audio.value) return; 
     const action = val ? 'play' : 'pause';
@@ -187,7 +203,13 @@ watch(playing, (val) => {
     }
 });
 
+
 onMounted(async () => {
+    if (store.getters.isAuthenticated) {
+        await store.dispatch("loadFavorites");
+        console.log("Favorites loaded:", store.state.favorites);
+    }
+
     await nextTick(); 
     if (!audio.value) return;
     audio.value.addEventListener('timeupdate', () => {
@@ -420,6 +442,14 @@ onMounted(async () => {
     grid-template-columns: repeat(2, 40px);
     gap: 16px;
     align-items: center;
+}
+.controls-heart path {
+  fill: #999;
+  transition: fill 0.3s ease;
+}
+
+.controls-heart.active path {
+  fill: red;
 }
 
 @media(max-width: 576px) {
