@@ -10,7 +10,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Firebase\JWT\ExpiredException;
 
-$secret_key = "aD8SZNhKlC5McZBe2sac2YDdZ6JN7un0OJTULKgJ35w=";
+$secret_key = $_ENV['JWT_SECRET_KEY'];
 
 // невеликий запас часу, щоб уникнути фальшивих "expired"
 JWT::$leeway = 60;

@@ -92,7 +92,7 @@ $update = $pdo->prepare("
 $update->execute([$ip, $user['id']]);
 
 // --- JWT ---
-$secret_key = "aD8SZNhKlC5McZBe2sac2YDdZ6JN7un0OJTULKgJ35w=";
+$secret_key = $_ENV['JWT_SECRET_KEY'];
 $issuer_claim = "yourdomain.com";
 $audience_claim = "yourdomain.com";
 $issuedat_claim = time();
