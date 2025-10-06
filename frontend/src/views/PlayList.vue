@@ -14,12 +14,10 @@
         <music-button @click="createNewPlaylist" type-btn="btn-sky" text="Створити"></music-button>
         <p v-if="errorEmptyPlaylist" class="error">Поле не може бути пустим. Введіть назву плейлиста</p>
     </div>
-    <div v-if="loading" class="loader-wrap">
-        <div class="loader"></div>
-    </div>
+    <div v-if="loading"></div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else-if="playlists.length > 0" class="playlists">
-        <div v-for="pl in playlists" :key="pl.id" class="playlist-card">
+    <div v-else-if="allPlaylists.length > 0" class="playlists">
+        <div v-for="pl in allPlaylists" :key="pl.id" class="playlist-card">
             <div class="playlist-head">
                 <h4>{{ pl.name }}</h4>
                 <small>Оновлено: {{ pl.updated_at }}</small>
@@ -28,7 +26,7 @@
                     <music-button 
                         type-btn="btn-fresh" 
                         text="Слухати" 
-                        @action="() => playPlaylist(pl.id)"
+                        @action="() => playPlaylist(pl.id, pl.tracks)"
                     ></music-button>
                     <music-button 
                         type-btn="btn-hot" 
@@ -53,14 +51,16 @@
         </div>
     </div>
         <div v-else>
-            <h4>Плейлистів ще немає.</h4>
+            <div class="loader-wrap">
+                <div class="loader"></div>
+            </div>
         </div>
         <music-player></music-player>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useStore } from 'vuex';
 import MusicButton from '@/components/MusicButton.vue';
 import MusicAlert from '@/components/MusicAlert.vue';
@@ -73,6 +73,8 @@ const errorEmptyPlaylist = ref(false);
 const showAlert = ref(false);
 const playlistToDelete = ref(null);
 const openPlaylistId = ref(null);
+const pageLoading = ref(true); 
+
 
 const alertConfig = ref({
     title: '',
@@ -80,20 +82,64 @@ const alertConfig = ref({
     buttons: []
 });
 
-const playlists = computed(() => store.getters.playlists);
-const loading   = computed(() => store.getters.loading);
-const error     = computed(() => store.getters.error);
+const playlists = ref([]);
+const loadingStore = computed(() => store.getters.loading);
+const errorStore = computed(() => store.getters.error);
+const isLoading = computed(() => loadingStore.value || pageLoading.value);
+const loading = computed(() => store.getters.loading);
+const error = computed(() => store.getters.error);
 
-const tracksOf = (playlistId) => store.getters.tracksOf(playlistId);
+const allTracksMap = ref({});
 
 function openAlert(config) {
     alertConfig.value = config;
     showAlert.value = true;
 }
 
+function closeAlert() {
+    showAlert.value = false;
+    playlistToDelete.value = null;
+}
+
+function toggleMusicAll(id) {
+    openPlaylistId.value = openPlaylistId.value === id ? null : id;
+}
+
+function tracksOf(playlistId) {
+    if (playlistId === 'favorites') {
+        return store.getters['favoritesTracks'] || [];
+    }
+    return store.getters.tracksOf(playlistId) || [];
+}
+
+
 async function fetchPlaylists() {
     try {
         await store.dispatch('fetchPlaylists');
+        playlists.value = store.getters.playlists || [];
+        await Promise.all(
+            playlists.value.map(pl => store.dispatch('fetchPlaylistTracks', pl.id))
+        );
+        await store.dispatch('loadFavorites');
+        const map = {};
+        playlists.value.forEach(pl => {
+            pl.tracks?.forEach(track => {
+                map[track.id] = track;
+            });
+        });
+        store.getters['favoritesTracks'].forEach(track => {
+            map[track.id] = track;
+        });
+        allTracksMap.value = map;
+        allPlaylists.value = [
+            {
+                id: 'favorites',
+                name: 'Favorites',
+                tracks: store.getters['favoritesTracks'] || []
+            },
+            ...playlists.value
+        ];
+
     } catch (err) {
         openAlert({
             title: 'Помилка',
@@ -109,16 +155,16 @@ async function createNewPlaylist() {
         return;
     }
     errorEmptyPlaylist.value = false;
-
     try {
         const name = newPlaylistName.value.trim();
         await store.dispatch('createPlaylist', name);
-            newPlaylistName.value = '';
-            openAlert({
+        newPlaylistName.value = '';
+        openAlert({
             title: 'Успіх',
             description: `Плейлист "${name}" створено!`,
             buttons: [{ text: 'OK', typeBtn: 'btn-fresh', action: closeAlert }]
         });
+        await fetchPlaylists(); 
     } catch (err) {
         openAlert({
             title: 'Помилка',
@@ -131,7 +177,8 @@ async function createNewPlaylist() {
 async function removeTrack(playlistId, trackId) {
     try {
         await store.dispatch('removeTrackFromPlaylist', { playlistId, trackId });
-    } catch (err) {
+        await fetchPlaylists();
+    } catch {
         openAlert({
             title: 'Помилка',
             description: 'Не вдалося видалити трек',
@@ -142,10 +189,10 @@ async function removeTrack(playlistId, trackId) {
 
 async function confirmDelete() {
     if (!playlistToDelete.value) return;
-
     try {
         await store.dispatch('deletePlaylist', playlistToDelete.value);
-    } catch (err) {
+        await fetchPlaylists();
+    } catch {
         openAlert({
             title: 'Помилка',
             description: 'Не вдалося видалити плейлист',
@@ -168,14 +215,9 @@ function askDelete(id) {
     });
 }
 
-function closeAlert() {
-    showAlert.value = false;
-    playlistToDelete.value = null;
-}
-
-function playPlaylist(playlistId) {
-    const tracks = tracksOf(playlistId);
-    if (!tracks.length) {
+function playPlaylist(playlistId, tracks = null) {
+    const list = tracks || tracksOf(playlistId);
+    if (!list.length) {
         openAlert({
             title: 'Порожній плейлист',
             description: 'У цьому плейлисті ще немає треків',
@@ -183,31 +225,28 @@ function playPlaylist(playlistId) {
         });
         return;
     }
-    store.dispatch('startPlaylist', { playlistId, tracks });
+    store.dispatch('startPlaylist', { playlistId, tracks: list });
 }
-
-function toggleMusicAll(id) {
-    openPlaylistId.value = openPlaylistId.value === id ? null : id
-}
-
-
-watch(playlists, (list) => {
-    if (list && list.length) {
-        list.forEach((pl) => store.dispatch('fetchPlaylistTracks', pl.id));
-    }
-},
-    { 
-        immediate: true, 
-        deep: false 
-    }
-);
-
-onMounted(fetchPlaylists);
 
 function toUpperCaseFirstLetter(str) {
-    return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+// const favoritesPlaylist = ref({
+//     id: 'favorites',
+//     name: 'Favorites',
+//     tracks: store.getters['favoritesTracks']
+// });
+
+const allPlaylists = ref([]);
+
+onMounted(async () => {
+    await fetchPlaylists();
+});
+
 </script>
+
 
 
 

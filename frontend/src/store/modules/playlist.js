@@ -1,7 +1,8 @@
 // store/playlist.js
-import axios from 'axios';
+// import axios from 'axios';
+// const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8000/api';
 
-const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8000/api';
+import backendApi from '@/api/backend';
 
 export default {
     state: () => ({
@@ -35,27 +36,27 @@ export default {
 
     actions: {
         async fetchPlaylists({ commit }) {
-        commit('setLoading', true);
-        commit('setError', null);
-        const start = Date.now();
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/playlists.php`);
-            if (data.status === 'success') commit('setPlaylists', data.data || []);
-            else commit('setError', data.message || 'Error fetching playlists');
+            commit('setLoading', true);
+            commit('setError', null);
+            const start = Date.now();
+            try {
+                const { data } = await backendApi.get('/api/playlists.php');
+                if (data.status === 'success') commit('setPlaylists', data.data || []);
+                else commit('setError', data.message || 'Error fetching playlists');
             } catch (err) {
                 commit('setError', err.response?.data?.message || err.message || 'Server error');
             } finally {
-                const elapsed = Date.now() - start; 
-                const delay = Math.max(0, 2000 - elapsed); 
-                setTimeout(() => {
-                    commit('setLoading', false);
-                }, delay);
+                const elapsed = Date.now() - start;
+                const delay = Math.max(0, 1000 - elapsed);
+                await new Promise(r => setTimeout(r, delay)); 
+                commit('setLoading', false);
             }
         },
+        
 
         async createPlaylist({ commit }, name) {
             try {
-                const { data } = await axios.post(`${API_BASE_URL}/playlists.php`, { name });
+                const { data } = await backendApi.post('/api/playlists.php', { name });
                 if (data.status === 'success') commit('addPlaylist', data.data);
                 else throw new Error(data.message || 'Failed to create playlist');
             } catch (err) {
@@ -65,7 +66,7 @@ export default {
 
         async fetchPlaylistTracks({ commit }, playlistId) {
             try {
-                const { data } = await axios.get(`${API_BASE_URL}/playlist_tracks.php`, {
+                const { data } = await backendApi.get('/api/playlist_tracks.php', {
                     params: { playlist_id: playlistId },
                 });
                 if (data.status === 'success') {
@@ -89,7 +90,7 @@ export default {
                 duration_sec: song.duration_sec || null,
             };
             try {
-                const { data } = await axios.post(`${API_BASE_URL}/playlist_tracks.php`, payload);
+                const { data } = await backendApi.post('/api/playlist_tracks.php', payload);
                 if (data.status !== 'success') throw new Error(data.message || 'Add failed');
                 await dispatch('fetchPlaylistTracks', playlistId);
             } catch (err) {
@@ -99,7 +100,7 @@ export default {
 
         async removeTrackFromPlaylist({ dispatch }, { playlistId, trackId }) {
             try {
-                const { data } = await axios.delete(`${API_BASE_URL}/playlist_tracks.php`, {
+                const { data } = await backendApi.delete('/api/playlist_tracks.php', {
                     data: { playlist_id: playlistId, track_id: trackId }, 
                 });
                 if (data.status !== 'success') throw new Error(data.message || 'Remove failed');
@@ -111,7 +112,7 @@ export default {
 
         async deletePlaylist({ commit }, id) {
             try {
-                const { data } = await axios.delete(`${API_BASE_URL}/playlists.php`, {
+                const { data } = await backendApi.delete('/api/playlists.php', {
                     params: { id }
                 });
                 if (data.status === 'success') {

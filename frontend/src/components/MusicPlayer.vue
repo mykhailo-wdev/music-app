@@ -157,7 +157,8 @@ function seek() {
 }
 
 function truncate(str, limit = 20) {
-    return str.length > limit ? str.slice(0, limit) + "..." : str
+    if (!str) return ''; 
+    return str.length > limit ? str.slice(0, limit) + "..." : str;
 }
 
 function toggleRandom() {
@@ -207,7 +208,6 @@ watch(playing, (val) => {
 onMounted(async () => {
     if (store.getters.isAuthenticated) {
         await store.dispatch("loadFavorites");
-        console.log("Favorites loaded:", store.state.favorites);
     }
 
     await nextTick(); 
