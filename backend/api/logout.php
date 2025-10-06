@@ -20,7 +20,7 @@ if (!$authHeader || !preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
 }
 
 $jwt = $matches[1];
-$secret_key = "aD8SZNhKlC5McZBe2sac2YDdZ6JN7un0OJTULKgJ35w=";
+$secret_key = $_ENV['JWT_SECRET_KEY'];
 
 // Отримуємо refresh token із тіла запиту
 $data = json_decode(file_get_contents("php://input"), true);

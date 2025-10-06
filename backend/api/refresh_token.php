@@ -17,7 +17,7 @@ if (!$refresh_token) {
     exit;
 }
 
-$secret_key = "aD8SZNhKlC5McZBe2sac2YDdZ6JN7un0OJTULKgJ35w=";
+$secret_key = $_ENV['JWT_SECRET_KEY'];
 
 try {
     // Декодуємо JWT

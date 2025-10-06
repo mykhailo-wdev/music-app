@@ -17,7 +17,7 @@ if (!$jwt && isset($_GET['token'])) {
     $jwt = trim($_GET['token']);
 }
     
-$secret_key = "aD8SZNhKlC5McZBe2sac2YDdZ6JN7un0OJTULKgJ35w="; // переконайся, що це саме "секрет", а не base64 закодований ключ
+$secret_key = $_ENV['JWT_SECRET_KEY'];
 
 try {
     if (!$jwt || substr_count($jwt, '.') !== 2) {
