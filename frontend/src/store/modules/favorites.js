@@ -1,4 +1,4 @@
-import axios from "axios";
+import backendApi from "@/api/backend";
 
 export default {
     state: () => ({
@@ -21,16 +21,12 @@ export default {
 
     actions: {
         async loadFavorites({ commit }) {
-            const token = localStorage.getItem("access_token");
-            if (!token) return;
             try {
-                const res = await axios.get("/favorites.php", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                if (res.data.status === "success") {
-                    commit("setFavorites", res.data.favorites || []); 
+                const { data } = await backendApi.get("/api/favorites.php");
+                if (data.status === "success") {
+                    commit("setFavorites", data.favorites || []);
                 } else {
-                    console.warn("Failed to load favorites:", res.data.message);
+                    console.warn("Failed to load favorites:", data.message);
                 }
             } catch (err) {
                 console.error("Failed to fetch favorites:", err);
@@ -38,27 +34,21 @@ export default {
         },
 
         async toggleFavorite({ commit, state }, trackId) {
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                alert("Token не знайдено");
-                return;
-            }
             try {
                 const idStr = String(trackId);
                 const isFav = state.favorites.includes(idStr);
-                const method = isFav ? "DELETE" : "POST";
 
-                const res = await axios({
-                    url: "/favorites.php",
+                const method = isFav ? "delete" : "post";
+                const res = await backendApi({
+                    url: "/api/favorites.php",
                     method,
-                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
                     data: { track_id: trackId }
                 });
 
                 if (res.data.status === "success") {
                     commit("toggleFav", trackId);
                 } else {
-                    console.warn("Failed to toggle favorite:", res.data.message);
+                    console.warn(`${isFav ? "Remove" : "Add"} favorite failed:`, res.data.message);
                 }
             } catch (err) {
                 console.error("Fav error:", err);

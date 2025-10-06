@@ -4,6 +4,7 @@ import auth from "./modules/auth";
 import playlist from "./modules/playlist";
 import player from './modules/player';
 import favorites from './modules/favorites';
+import favorites_playlist from './modules/favorites_playlist';
 
 
 export default createStore({
@@ -12,6 +13,7 @@ export default createStore({
         auth,
         playlist,
         player,
-        favorites
+        favorites,
+        favorites_playlist
     }
 })

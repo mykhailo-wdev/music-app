@@ -1,5 +1,10 @@
 <?php
 require_once __DIR__ . '/cors.php';
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -17,8 +22,8 @@ if (!$jwt) {
     exit;
 }
 
-// --- Декодуємо токен ---
 $secret_key = "aD8SZNhKlC5McZBe2sac2YDdZ6JN7un0OJTULKgJ35w=";
+
 try {
     $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
     $user_id = $decoded->data->id ?? null;
@@ -42,7 +47,7 @@ switch ($method) {
         echo json_encode(["status" => "success", "favorites" => $tracks]);
         break;
 
-    case "POST": 
+    case "POST":
         $data = json_decode(file_get_contents("php://input"), true);
         $track_id = $data['track_id'] ?? null;
         if ($track_id) {
@@ -54,7 +59,7 @@ switch ($method) {
         }
         break;
 
-    case "DELETE": 
+    case "DELETE":
         $data = json_decode(file_get_contents("php://input"), true);
         $track_id = $data['track_id'] ?? null;
         if ($track_id) {
