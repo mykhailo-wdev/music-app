@@ -77,7 +77,7 @@ function closeAlert() {
 }
 .alert-btns {
     margin-top: var(--m-space-16);
-    display: grid;
+    display: inline-grid;
     grid-template-columns: auto auto;
     gap: var(--m-space-16);
 }

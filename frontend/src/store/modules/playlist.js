@@ -1,7 +1,4 @@
 // store/playlist.js
-// import axios from 'axios';
-// const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8000/api';
-
 import backendApi from '@/api/backend';
 
 export default {
