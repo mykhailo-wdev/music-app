@@ -9,6 +9,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
+
 $data = json_decode(file_get_contents("php://input"), true);
 $email = trim($data['email'] ?? '');
 $password = trim($data['password'] ?? '');
@@ -139,3 +140,6 @@ echo json_encode([
         "email" => $user['email'],
     ]
 ]);
+
+
+

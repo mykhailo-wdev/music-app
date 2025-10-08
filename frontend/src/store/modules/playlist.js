@@ -37,7 +37,7 @@ export default {
             commit('setError', null);
             const start = Date.now();
             try {
-                const { data } = await backendApi.get('/api/playlists.php');
+                const { data } = await backendApi.get('/playlists.php');
                 if (data.status === 'success') commit('setPlaylists', data.data || []);
                 else commit('setError', data.message || 'Error fetching playlists');
             } catch (err) {
@@ -53,7 +53,7 @@ export default {
 
         async createPlaylist({ commit }, name) {
             try {
-                const { data } = await backendApi.post('/api/playlists.php', { name });
+                const { data } = await backendApi.post('/playlists.php', { name });
                 if (data.status === 'success') commit('addPlaylist', data.data);
                 else throw new Error(data.message || 'Failed to create playlist');
             } catch (err) {
@@ -63,7 +63,7 @@ export default {
 
         async fetchPlaylistTracks({ commit }, playlistId) {
             try {
-                const { data } = await backendApi.get('/api/playlist_tracks.php', {
+                const { data } = await backendApi.get('/playlist_tracks.php', {
                     params: { playlist_id: playlistId },
                 });
                 if (data.status === 'success') {
@@ -87,7 +87,7 @@ export default {
                 duration_sec: song.duration_sec || null,
             };
             try {
-                const { data } = await backendApi.post('/api/playlist_tracks.php', payload);
+                const { data } = await backendApi.post('/playlist_tracks.php', payload);
                 if (data.status !== 'success') throw new Error(data.message || 'Add failed');
                 await dispatch('fetchPlaylistTracks', playlistId);
             } catch (err) {
@@ -97,7 +97,7 @@ export default {
 
         async removeTrackFromPlaylist({ dispatch }, { playlistId, trackId }) {
             try {
-                const { data } = await backendApi.delete('/api/playlist_tracks.php', {
+                const { data } = await backendApi.delete('/playlist_tracks.php', {
                     data: { playlist_id: playlistId, track_id: trackId }, 
                 });
                 if (data.status !== 'success') throw new Error(data.message || 'Remove failed');
@@ -109,7 +109,7 @@ export default {
 
         async deletePlaylist({ commit }, id) {
             try {
-                const { data } = await backendApi.delete('/api/playlists.php', {
+                const { data } = await backendApi.delete('/playlists.php', {
                     params: { id }
                 });
                 if (data.status === 'success') {

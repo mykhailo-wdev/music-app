@@ -1,86 +1,5 @@
-import axios from 'axios';
-
-const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8000/api';
-axios.defaults.baseURL = API_BASE_URL;
-
-axios.interceptors.request.use((config) => {
-    const access = localStorage.getItem('access_token') || localStorage.getItem('token');
-    if (access) config.headers.Authorization = `Bearer ${access}`;
-    return config;
-});
-
-
-let isRefreshing = false;
-let queue = [];
-const enqueue = (resolver) => queue.push(resolver);
-const flush = (error, token) => {
-    queue.forEach((resolve) => resolve(error, token));
-    queue = [];
-};
-
-axios.interceptors.response.use(
-    (res) => res,
-    async (error) => {
-        const original = error.config;
-        if (!original) return Promise.reject(error);
-        if (original.url && original.url.includes('/refresh_token.php')) {
-            return Promise.reject(error);
-        }
-
-        const isAuthError =
-        error.response?.status === 401 ||
-        /expired token|invalid token/i.test(error.response?.data?.message || '');
-
-        if (!isAuthError) return Promise.reject(error);
-
-        if (original._retry) return Promise.reject(error);
-        original._retry = true;
-
-        if (isRefreshing) {
-            return new Promise((resolve, reject) => {
-                enqueue((err, newToken) => {
-                if (err) return reject(err);
-                if (newToken) original.headers.Authorization = `Bearer ${newToken}`;
-                resolve(axios(original));
-                });
-            });
-        }
-
-        isRefreshing = true;
-        const refresh = localStorage.getItem('refresh_token');
-        if (!refresh) {
-            isRefreshing = false;
-            flush(new Error('No refresh token'), null);
-            return Promise.reject(error);
-        }
-
-        try {
-            const { data } = await axios.post('/refresh_token.php', { refresh_token: refresh }, {
-                headers: { 'Content-Type': 'application/json' },
-            });
-
-        if (data.status !== 'success' || !data.access_token) {
-            throw new Error(data.message || 'Refresh failed');
-        }
-
-        localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('token', data.access_token);
-        if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
-
-        original.headers.Authorization = `Bearer ${data.access_token}`;
-        flush(null, data.access_token);
-        return axios(original);
-        } catch (e) {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('token');
-            localStorage.removeItem('refresh_token');
-            flush(e, null);
-            return Promise.reject(e);
-        } finally {
-            isRefreshing = false;
-        }
-    }
-);
+import api from '@/api/backend';
+const API = api;
 
 export default {
     state: () => ({
@@ -139,7 +58,7 @@ export default {
             commit('setStatus', 'loading');
             commit('setError', null);
             try {
-                const res = await axios.post(`${API_BASE_URL}/register.php`, payload);
+                const res = await API.post('/register.php', payload);
                 if (res.data.status === 'success') {
                     commit('setStatus', 'success');
                 } else {
@@ -156,7 +75,7 @@ export default {
             commit('setStatus', 'loading');
             commit('clearAuthErrors');
             try {
-            const res = await axios.post(`${API_BASE_URL}/login.php`, payload);
+            const res = await API.post('/login.php', payload);
 
             if (res.data.status === 'success') {
                 const access = res.data.access_token;
@@ -180,7 +99,7 @@ export default {
 
         async logout({ commit, state }) {
             try {
-            await axios.post(`${API_BASE_URL}/logout.php`, {
+            await API.post('/logout.php', { refresh_token: localStorage.getItem('refresh_token') }, {
                 refresh_token: localStorage.getItem('refresh_token')
             }, {
                 headers: {
@@ -198,7 +117,7 @@ export default {
             commit('clearAuthErrors');
 
             try {
-                const res = await axios.post(`${API_BASE_URL}/forgot_password.php`, payload);
+                const res = await API.post('/forgot_password.php', payload);
 
                 if (res.data.status === 'success') {
                     commit('setStatus', 'success');
@@ -219,7 +138,7 @@ export default {
         async verifyEmail({ commit }, token) {
             commit('auth_request');
             try {
-                const res = await axios.post(`${API_BASE_URL}/verify_email.php`, { token });
+                const res = await API.post('/verify_email.php', { token });
                 if (res.data.status === 'success') {
                     const access = res.data.access_token;
                     const refresh = res.data.refresh_token;
