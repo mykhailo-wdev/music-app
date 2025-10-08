@@ -22,7 +22,7 @@ export default {
     actions: {
         async loadFavorites({ commit }) {
             try {
-                const { data } = await backendApi.get("/api/favorites.php");
+                const { data } = await backendApi.get("/favorites.php");
                 if (data.status === "success") {
                     commit("setFavorites", data.favorites || []);
                 } else {
@@ -40,7 +40,7 @@ export default {
 
                 const method = isFav ? "delete" : "post";
                 const res = await backendApi({
-                    url: "/api/favorites.php",
+                    url: "/favorites.php",
                     method,
                     data: { track_id: trackId }
                 });

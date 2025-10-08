@@ -20,7 +20,7 @@ export default {
             commit('setError', null);
 
             try {
-                const { data } = await backendApi.get("/api/favorites_playlist.php");
+                const { data } = await backendApi.get("/favorites_playlist.php");
 
                 if (data.status === 'success') {
                     const allTracks = rootState.playlist?.tracksByPlaylist || {};

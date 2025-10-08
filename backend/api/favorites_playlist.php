@@ -12,7 +12,6 @@ $headers = function_exists('getallheaders') ? getallheaders() : [];
 $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 $jwt = trim(preg_replace('/^Bearer\s+/i', '', $authHeader ?? '') ?? '');
 
-// ДОДАТКОВО: дозволимо токен через query (?token=) для тестів у браузері
 if (!$jwt && isset($_GET['token'])) {
     $jwt = trim($_GET['token']);
 }
@@ -31,8 +30,6 @@ try {
 
     $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
 
-    // ПІДГОНКА ПІД ТВОЮ СХЕМУ ПЕЙЛОАДА:
-    // часто це $decoded->sub або $decoded->user_id; ти використовуєш $decoded->data->id
     $user_id = $decoded->data->id ?? $decoded->sub ?? $decoded->user_id ?? null;
     if (!$user_id) {
         throw new Exception("User ID not found in token payload");
