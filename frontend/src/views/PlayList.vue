@@ -20,7 +20,7 @@
         <div v-for="pl in allPlaylists" :key="pl.id" class="playlist-card">
             <div class="playlist-head">
                 <h4>{{ pl.name }}</h4>
-                <small>Оновлено: {{ pl.updated_at }}</small>
+                <small>Оновлено: {{ pl.updated_at_local || pl.updated_at }}</small>
                 <br>
                 <div class="playlist-btns">
                     <music-button 
@@ -232,12 +232,6 @@ function toUpperCaseFirstLetter(str) {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
-
-// const favoritesPlaylist = ref({
-//     id: 'favorites',
-//     name: 'Favorites',
-//     tracks: store.getters['favoritesTracks']
-// });
 
 const allPlaylists = ref([]);
 

@@ -1,26 +1,33 @@
 <?php
 // backend/api/playlist.php
-require_once __DIR__ . '/cors.php';      
-require_once __DIR__ . '/auth.php';      
+require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/db.php'; 
 
 global $pdo;
 $userId = auth_user_id();
 $method = $_SERVER['REQUEST_METHOD'];
 
-// GET /playlist.php
 if ($method === 'GET') {
-    $stmt = $pdo->prepare(
-        "SELECT id, name, created_at, updated_at
-         FROM playlists
-         WHERE user_id = ?
-         ORDER BY updated_at DESC"
-    );
+    $stmt = $pdo->prepare("
+        SELECT id, name, created_at, updated_at
+        FROM playlists
+        WHERE user_id = ?
+        ORDER BY updated_at DESC
+    ");
     $stmt->execute([$userId]);
-    echo json_encode(['status' => 'success', 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)], JSON_UNESCAPED_UNICODE);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // додаємо локальні поля
+    foreach ($rows as &$r) {
+        $r['created_at_local'] = $r['created_at'] ? utcToLocal($r['created_at']) : null;
+        $r['updated_at_local'] = $r['updated_at'] ? utcToLocal($r['updated_at']) : null;
+    }
+
+    echo json_encode(['status' => 'success', 'data' => $rows], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-// POST /playlist.php  body: { name }
 if ($method === 'POST') {
     $body = json_input();
     $name = trim($body['name'] ?? '');
@@ -32,21 +39,27 @@ if ($method === 'POST') {
     }
 
     try {
-        $stmt = $pdo->prepare(
-            "INSERT INTO playlists (user_id, name, created_at, updated_at)
-             VALUES (?, ?, NOW(), NOW())"
-        );
-        $stmt->execute([$userId, $name]);
+        // ПИШЕМО UTC
+        $stmt = $pdo->prepare("
+            INSERT INTO playlists (user_id, name, created_at, updated_at)
+            VALUES (?, ?, ?, ?)
+        ");
+        $now = nowUtc();
+        $stmt->execute([$userId, $name, $now, $now]);
 
         $id = (int)$pdo->lastInsertId();
 
-        $stmt = $pdo->prepare(
-            "SELECT id, name, created_at, updated_at
-             FROM playlists
-             WHERE id = ? AND user_id = ?"
-        );
+        $stmt = $pdo->prepare("
+            SELECT id, name, created_at, updated_at
+            FROM playlists
+            WHERE id = ? AND user_id = ?
+        ");
         $stmt->execute([$id, $userId]);
         $playlist = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // додаємо локальні поля
+        $playlist['created_at_local'] = $playlist['created_at'] ? utcToLocal($playlist['created_at']) : null;
+        $playlist['updated_at_local'] = $playlist['updated_at'] ? utcToLocal($playlist['updated_at']) : null;
 
         echo json_encode(['status' => 'success', 'data' => $playlist], JSON_UNESCAPED_UNICODE);
     } catch (PDOException $e) {
@@ -61,7 +74,6 @@ if ($method === 'POST') {
     exit;
 }
 
-// DELETE /playlist.php?id=123
 if ($method === 'DELETE') {
     $playlistId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -71,7 +83,6 @@ if ($method === 'DELETE') {
         exit;
     }
 
-    // Переконуємось, що плейлист належить юзеру
     $stmt = $pdo->prepare("SELECT id FROM playlists WHERE id = ? AND user_id = ?");
     $stmt->execute([$playlistId, $userId]);
     if (!$stmt->fetchColumn()) {
@@ -80,10 +91,7 @@ if ($method === 'DELETE') {
         exit;
     }
 
-    // Спочатку видалимо зв’язки треків
     $pdo->prepare("DELETE FROM playlist_tracks WHERE playlist_id = ?")->execute([$playlistId]);
-
-    // Потім сам плейлист
     $stmt = $pdo->prepare("DELETE FROM playlists WHERE id = ? AND user_id = ?");
     $stmt->execute([$playlistId, $userId]);
 
@@ -91,7 +99,7 @@ if ($method === 'DELETE') {
     exit;
 }
 
-// Метод не підтримується
 http_response_code(405);
 echo json_encode(['status' => 'error', 'message' => 'Method not allowed'], JSON_UNESCAPED_UNICODE);
 exit;
+
