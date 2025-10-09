@@ -6,10 +6,11 @@
     "target": "es6",
     "moduleResolution": "node",
     "baseUrl": ".",
-    "outDir": "./dist", 
+    "outDir": "./dist",
     "paths": {
-      "*": ["node_modules/*"]
-    }
+      "@/*": ["src/*"]
+    },
+    "ignoreDeprecations": "6.0"  
   },
   "exclude": ["node_modules"]
 }

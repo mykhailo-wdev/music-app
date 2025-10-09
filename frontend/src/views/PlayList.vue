@@ -45,7 +45,9 @@
                     <span>{{ idx + 1 }}.</span>
                     {{ toUpperCaseFirstLetter(track.track_name) }} – {{ toUpperCaseFirstLetter(track.artist_name) }}
                     |
-                    <button class="delete-track" @click="removeTrack(pl.id, track.id)">❌</button> 
+                    <button class="delete-track" @click="removeTrack(pl.id, track.id)">
+                        <img :src="require('@/assets/images/delete-icon.svg')" alt="Delete icon" width="26" height="26" fetchpriority="low">
+                    </button> 
                 </li>
             </ul>
         </div>
@@ -72,7 +74,7 @@ const newPlaylistName = ref('');
 const errorEmptyPlaylist = ref(false);
 const showAlert = ref(false);
 const playlistToDelete = ref(null);
-const openPlaylistId = ref(null);
+const openPlaylistId = ref(null);  
 const pageLoading = ref(true); 
 
 
@@ -307,12 +309,14 @@ small {
 }
 .delete-track {
     cursor: pointer;
-    font-size: 16px;
+    margin-left: 4px;
 }
 .track-list {
     padding: 0 8px;  
 }
 .track-item {
+    display: flex;
+    align-items: center;
     padding: 8px;
     border-top: 1px solid var(--palette-stroke);
     @include mixins.text-small();
