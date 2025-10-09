@@ -1,5 +1,14 @@
+// src/store/modules/auth.js
 import api from '@/api/backend';
 const API = api;
+
+function getIanaTz() {
+    try { 
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; 
+    } catch { 
+        return 'UTC'; 
+    }
+}
 
 export default {
     state: () => ({
@@ -11,21 +20,11 @@ export default {
     }),
 
     mutations: {
-        setUser(state, user) {
-            state.user = user;
-        },
-        setToken(state, token) {
-            state.token = token;
-        },
-        setStatus(state, status) {
-            state.status = status;
-        },
-        setAuthErrors(state, errors) {
-            state.authErrors = errors;
-        },
-        setError(state, error) {
-            state.error = error;
-        },
+        setUser(state, user) { state.user = user; },
+        setToken(state, token) { state.token = token; },
+        setStatus(state, status) { state.status = status; },
+        setAuthErrors(state, errors) { state.authErrors = errors; },
+        setError(state, error) { state.error = error; },
         logout(state) {
             state.user = null;
             state.token = null;
@@ -34,23 +33,18 @@ export default {
             state.authErrors = {};
             localStorage.removeItem('access_token');
             localStorage.removeItem('token');
-            localStorage.removeItem('refresh_token'); 
+            localStorage.removeItem('refresh_token');
         },
-        clearAuthErrors(state) {
-            state.authErrors = {};
+        clearAuthErrors(state) { state.authErrors = {}; },
+        auth_request(state) { 
+            state.status = 'loading'; 
+            state.authErrors = {}; 
         },
-        auth_request(state) {
-            state.status = 'loading';
-            state.authErrors = {};
+        auth_success(state) { state.status = 'success'; },
+        auth_error(state, errors) { 
+            state.status = 'error'; 
+            state.authErrors = errors; 
         },
-        auth_success(state) {
-            state.status = 'success';
-        },
-        auth_error(state, errors) {
-            state.status = 'error';
-            state.authErrors = errors;
-        },
-        
     },
 
     actions: {
@@ -58,7 +52,8 @@ export default {
             commit('setStatus', 'loading');
             commit('setError', null);
             try {
-                const res = await API.post('/register.php', payload);
+                const body = { ...payload, timezone: payload?.timezone || getIanaTz() };
+                const res = await API.post('/register.php', body);
                 if (res.data.status === 'success') {
                     commit('setStatus', 'success');
                 } else {
@@ -75,39 +70,36 @@ export default {
             commit('setStatus', 'loading');
             commit('clearAuthErrors');
             try {
-            const res = await API.post('/login.php', payload);
+                const body = { ...payload, timezone: payload?.timezone || getIanaTz() };
+                const res = await API.post('/login.php', body);
 
-            if (res.data.status === 'success') {
-                const access = res.data.access_token;
-                const refresh = res.data.refresh_token;
-                localStorage.setItem('access_token', access);
-                localStorage.setItem('token', access);
-                localStorage.setItem('refresh_token', refresh);
+                if (res.data.status === 'success') {
+                    const access = res.data.access_token;
+                    const refresh = res.data.refresh_token;
+                    localStorage.setItem('access_token', access);
+                    localStorage.setItem('token', access);
+                    localStorage.setItem('refresh_token', refresh);
 
-                commit('setUser', res.data.user || payload.email);
-                commit('setToken', access);
-                commit('setStatus', 'success');
-            } else {
-                commit('setStatus', 'error');
-                commit('setAuthErrors', res.data.errors || { general: res.data.message });
-            }
+                    const user = res.data.user || { email: payload.email, timezone: getIanaTz() };
+                    commit('setUser', user);
+                    commit('setToken', access);
+                    commit('setStatus', 'success');
+                } else {
+                    commit('setStatus', 'error');
+                    commit('setAuthErrors', res.data.errors || { general: res.data.message });
+                }
             } catch (err) {
                 commit('setStatus', 'error');
                 commit('setAuthErrors', { general: err.message });
             }
         },
 
-        async logout({ commit, state }) {
+        async logout({ commit }) {
             try {
-            await API.post('/logout.php', { refresh_token: localStorage.getItem('refresh_token') }, {
-                refresh_token: localStorage.getItem('refresh_token')
-            }, {
-                headers: {
-                    Authorization: `Bearer ${state.token}`
-                }
-            });
+                const refresh_token = localStorage.getItem('refresh_token');
+                await API.post('/logout.php', { refresh_token, timezone: getIanaTz() });
             } catch (error) {
-                console.warn('Logout API failed:', error.message);
+                console.warn('Logout API failed:', error?.message || error);
             }
             commit('logout');
         },
@@ -115,9 +107,11 @@ export default {
         async forgotPassword({ commit }, payload) {
             commit('setStatus', 'loading');
             commit('clearAuthErrors');
-
             try {
-                const res = await API.post('/forgot_password.php', payload);
+                const res = await API.post('/forgot_password.php', {
+                    ...payload,
+                    timezone: getIanaTz(),
+                });
 
                 if (res.data.status === 'success') {
                     commit('setStatus', 'success');
@@ -125,20 +119,19 @@ export default {
                 } else {
                     commit('setStatus', 'error');
                     commit('setAuthErrors', res.data.errors || { general: res.data.message });
-                    return false; 
+                    return false;
                 }
             } catch (err) {
                 commit('setStatus', 'error');
                 commit('setAuthErrors', { general: 'Помилка з’єднання з сервером' });
-                return false; 
+                return false;
             }
         },
-
 
         async verifyEmail({ commit }, token) {
             commit('auth_request');
             try {
-                const res = await API.post('/verify_email.php', { token });
+                const res = await API.post('/verify_email.php', { token, timezone: getIanaTz() });
                 if (res.data.status === 'success') {
                     const access = res.data.access_token;
                     const refresh = res.data.refresh_token;
@@ -157,15 +150,16 @@ export default {
                 commit('auth_error', { general: err.message });
                 return { success: false, message: err.message };
             }
-        }
+        },
     },
 
     getters: {
-        // isAuthenticated: (state) => !!state.user,
         isAuthenticated: (state) => !!state.token,
         authStatus: (state) => state.status,
         authError: (state) => state.authErrors,
-    }
+    },
 };
+
+
 
 

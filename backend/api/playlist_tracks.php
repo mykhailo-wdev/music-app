@@ -1,17 +1,19 @@
 <?php
-//playlist_tracks.php
+// backend/api/playlist_tracks.php
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/db.php'; 
 
 header('Content-Type: application/json');
-$userId = auth_user_id();
-$method = $_SERVER['REQUEST_METHOD'];
-global $pdo;
 
 function response($status, $data = []) {
-    echo json_encode(['status' => $status] + $data);
+    echo json_encode(['status' => $status] + $data, JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+global $pdo;
+$userId = auth_user_id();
+$method = $_SERVER['REQUEST_METHOD'];
 
 // -------------------------------------------------
 // GET → список треків плейлиста
@@ -23,6 +25,7 @@ if ($method === 'GET') {
         response('error', ['message' => 'playlist_id required']);
     }
 
+    // Перевірти власність
     $stmt = $pdo->prepare("SELECT id FROM playlists WHERE id = ? AND user_id = ?");
     $stmt->execute([$playlistId, $userId]);
     if (!$stmt->fetch()) {
@@ -30,12 +33,22 @@ if ($method === 'GET') {
         response('error', ['message' => 'Playlist not found']);
     }
 
-    $stmt = $pdo->prepare("SELECT id, track_source_id, track_name, artist_name, album_image, audio_url, duration_sec, position_idx, added_at 
-                           FROM playlist_tracks 
-                           WHERE playlist_id = ? 
-                           ORDER BY position_idx ASC, id ASC");
+    $stmt = $pdo->prepare("
+        SELECT id, track_source_id, track_name, artist_name, album_image,
+               audio_url, duration_sec, position_idx, added_at
+        FROM playlist_tracks
+        WHERE playlist_id = ?
+        ORDER BY position_idx ASC, id ASC
+    ");
     $stmt->execute([$playlistId]);
-    response('success', ['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Локальний час
+    foreach ($rows as &$r) {
+        $r['added_at_local'] = $r['added_at'] ? utcToLocal($r['added_at']) : null;
+    }
+
+    response('success', ['data' => $rows]);
 }
 
 // -------------------------------------------------
@@ -56,6 +69,7 @@ if ($method === 'POST') {
         response('error', ['message' => 'Required fields missing']);
     }
 
+    // Перевірти власність
     $stmt = $pdo->prepare("SELECT id FROM playlists WHERE id = ? AND user_id = ?");
     $stmt->execute([$playlistId, $userId]);
     if (!$stmt->fetch()) {
@@ -64,10 +78,17 @@ if ($method === 'POST') {
     }
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO playlist_tracks 
-            (playlist_id, track_source_id, track_name, artist_name, album_image, audio_url, duration_sec) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$playlistId, $trackSourceId, $trackName, $artistName, $albumImage, $audioUrl, $durationSec]);
+        // INSERT у UTC (заповнюємо added_at)
+        $stmt = $pdo->prepare("
+            INSERT INTO playlist_tracks
+            (playlist_id, track_source_id, track_name, artist_name, album_image, audio_url, duration_sec, added_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([$playlistId, $trackSourceId, $trackName, $artistName, $albumImage, $audioUrl, $durationSec, nowUtc()]);
+
+        // Оновлюємо оновлення плейлиста (UTC)
+        $pdo->prepare("UPDATE playlists SET updated_at = ? WHERE id = ?")->execute([nowUtc(), $playlistId]);
+
         response('success');
     } catch (PDOException $e) {
         if ($e->getCode() === '23000') {
@@ -93,6 +114,7 @@ if ($method === 'DELETE') {
         response('error', ['message' => 'playlist_id and track_id required']);
     }
 
+    // Перевірти власність
     $stmt = $pdo->prepare("SELECT id FROM playlists WHERE id = ? AND user_id = ?");
     $stmt->execute([$playlistId, $userId]);
     if (!$stmt->fetch()) {
@@ -103,9 +125,12 @@ if ($method === 'DELETE') {
     $stmt = $pdo->prepare("DELETE FROM playlist_tracks WHERE id = ? AND playlist_id = ?");
     $stmt->execute([$trackId, $playlistId]);
 
+    // Оновлюємо оновлення плейлиста (UTC)
+    $pdo->prepare("UPDATE playlists SET updated_at = ? WHERE id = ?")->execute([nowUtc(), $playlistId]);
+
     response('success');
 }
 
-// Якщо метод не підтримується
+// Метод не підтримується
 http_response_code(405);
 response('error', ['message' => 'Method not allowed']);

@@ -1,19 +1,17 @@
 <?php
-// login.php
+// backend/api/login.php
 require_once __DIR__ . '/cors.php';
 header("Content-Type: application/json");
-
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
-
 
 $data = json_decode(file_get_contents("php://input"), true);
-$email = trim($data['email'] ?? '');
+$email    = trim($data['email'] ?? '');
 $password = trim($data['password'] ?? '');
-$ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$tz       = trim($data['timezone'] ?? activeTzName()); 
+$ip       = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
 if (!$email || !$password) {
     echo json_encode([
@@ -27,10 +25,10 @@ if (!$email || !$password) {
     exit;
 }
 
-// --- Шукаємо користувача ---
+// Знайти користувача
 $stmt = $pdo->prepare("SELECT id, email, password, failed_attempts, status FROM users WHERE email = ?");
 $stmt->execute([$email]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$user = $stmt->fetch();
 
 if (!$user) {
     echo json_encode([
@@ -41,37 +39,31 @@ if (!$user) {
     exit;
 }
 
-// --- Якщо вже в статусі banned ---
+// Статус banned
 if ($user['status'] === 'banned') {
     echo json_encode(["status" => "error", "message" => "Ваш акаунт заблоковано"]);
     exit;
 }
 
-// --- Якщо failed_attempts >= 5, блокуємо ---
+// Ліміт спроб
 if ((int)$user['failed_attempts'] >= 5) {
-    $update = $pdo->prepare("UPDATE users SET status = 'banned' WHERE id = ?");
-    $update->execute([$user['id']]);
+    $pdo->prepare("UPDATE users SET status = 'banned' WHERE id = ?")->execute([$user['id']]);
     echo json_encode(["status" => "error", "message" => "Акаунт тимчасово заблоковано через багато невдалих входів"]);
     exit;
 }
 
-// --- Перевірка пароля ---
+// Перевірка пароля
 if (!password_verify($password, $user['password'])) {
-    // Інкремент failed_attempts
-    $update = $pdo->prepare("
-        UPDATE users 
-        SET failed_attempts = failed_attempts + 1, 
-            status = CASE WHEN failed_attempts + 1 >= 5 THEN 'banned' ELSE status END 
+    $pdo->prepare("
+        UPDATE users
+        SET failed_attempts = failed_attempts + 1,
+            status = CASE WHEN failed_attempts + 1 >= 5 THEN 'banned' ELSE status END
         WHERE id = ?
-    ");
-    $update->execute([$user['id']]);
+    ")->execute([$user['id']]);
 
-    // Перевіримо стан після оновлення
-    $stmt2 = $pdo->prepare("SELECT failed_attempts, status FROM users WHERE id = ?");
-    $stmt2->execute([$user['id']]);
-    $updated = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-    if ($updated['status'] === 'banned') {
+    $st = $pdo->prepare("SELECT status FROM users WHERE id = ?");
+    $st->execute([$user['id']]);
+    if ($st->fetchColumn() === 'banned') {
         echo json_encode(["status" => "error", "message" => "Акаунт тимчасово заблоковано через багато невдалих входів"]);
         exit;
     }
@@ -84,52 +76,55 @@ if (!password_verify($password, $user['password'])) {
     exit;
 }
 
-// --- Пароль вірний: скидаємо лічильник і оновлюємо last_login_at, login_ip, статус ---
-$update = $pdo->prepare("
-    UPDATE users 
-    SET failed_attempts = 0, last_login_at = NOW(), login_ip = ?, status = 'active' 
+// Валідність таймзони
+try { new DateTimeZone($tz); } catch (Exception $e) { $tz = 'UTC'; }
+
+// Успішний логін: скидаємо лічильник, оновлюємо last_login_at (UTC), IP, статус і timezone
+$pdo->prepare("
+    UPDATE users
+    SET failed_attempts = 0,
+        last_login_at = ?,
+        login_ip = ?,
+        status = 'active',
+        timezone = ?
     WHERE id = ?
-");
-$update->execute([$ip, $user['id']]);
+")->execute([nowUtc(), $ip, $tz, $user['id']]);
 
-// --- JWT ---
-$secret_key = $_ENV['JWT_SECRET_KEY'];
-$issuer_claim = "yourdomain.com";
-$audience_claim = "yourdomain.com";
-$issuedat_claim = time();
-$notbefore_claim = $issuedat_claim;
+// JWT
+$secret_key      = $_ENV['JWT_SECRET_KEY'];
+$issuer_claim    = "yourdomain.com";
+$audience_claim  = "yourdomain.com";
+$issuedat_claim  = time();
 
-// Access Token (1 година)
+// Access (1 година)
 $access_token_payload = [
-    "iss" => $issuer_claim,
-    "aud" => $audience_claim,
-    "iat" => $issuedat_claim,
-    "nbf" => $notbefore_claim,
-    "exp" => $issuedat_claim + 3600,
+    "iss"  => $issuer_claim,
+    "aud"  => $audience_claim,
+    "iat"  => $issuedat_claim,
+    "nbf"  => $issuedat_claim,
+    "exp"  => $issuedat_claim + 3600,
     "data" => ["id" => $user['id'], "email" => $user['email']]
 ];
 $access_token = JWT::encode($access_token_payload, $secret_key, 'HS256');
 
-// Refresh Token (7 днів)
+// Refresh (7 днів)
 $refresh_token_payload = [
-    "iss" => $issuer_claim,
-    "aud" => $audience_claim,
-    "iat" => $issuedat_claim,
-    "nbf" => $notbefore_claim,
-    "exp" => $issuedat_claim + 604800,
+    "iss"  => $issuer_claim,
+    "aud"  => $audience_claim,
+    "iat"  => $issuedat_claim,
+    "nbf"  => $issuedat_claim,
+    "exp"  => $issuedat_claim + 604800,
     "data" => ["id" => $user['id']]
 ];
 $refresh_token = JWT::encode($refresh_token_payload, $secret_key, 'HS256');
 
-// Видаляємо старі refresh токени
-$stmt = $pdo->prepare("DELETE FROM refresh_tokens WHERE user_id = ?");
-$stmt->execute([$user['id']]);
+$pdo->prepare("DELETE FROM refresh_tokens WHERE user_id = ?")->execute([$user['id']]);
 
-// Вставляємо новий refresh token
-$stmt = $pdo->prepare("INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))");
-$stmt->execute([$user['id'], $refresh_token]);
+$pdo->prepare("
+  INSERT INTO refresh_tokens (user_id, token, expires_at)
+  VALUES (?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 7 DAY))
+")->execute([$user['id'], $refresh_token]);
 
-// --- Віддаємо JSON з токенами ---
 echo json_encode([
     "status" => "success",
     "message" => "Вхід успішний",
@@ -138,8 +133,6 @@ echo json_encode([
     "user" => [
         "id" => $user['id'],
         "email" => $user['email'],
+        "timezone" => $tz
     ]
 ]);
-
-
-
