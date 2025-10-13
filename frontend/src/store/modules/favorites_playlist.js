@@ -1,50 +1,51 @@
-// favorites_playlist.js
+// store/favorites_playlist.js
 import backendApi from "@/api/backend";
 
 export default {
     state: () => ({
         tracksByPlaylist: {}, 
-        loading: false,
-        error: null,
+        favLoading: false,
+        favError: null,
     }),
+
     mutations: {
-        setTracks(state, tracks) {
-            state.tracksByPlaylist = { ...state.tracksByPlaylist, favorites: tracks };
+        setFavTracks(state, tracks) {
+        state.tracksByPlaylist = { ...state.tracksByPlaylist, favorites: tracks };
         },
-        setLoading(state, val) { state.loading = val; },
-        setError(state, val) { state.error = val; },
+        setFavLoading(state, val) { state.favLoading = val; },
+        setFavError(state, val) { state.favError = val; },
     },
+
     actions: {
-        async loadFavorites({ commit, rootState }) {
-            commit('setLoading', true);
-            commit('setError', null);
+        async loadFavoritesPlaylist({ commit, rootState }) {
+        commit('setFavLoading', true);
+        commit('setFavError', null);
 
-            try {
-                const { data } = await backendApi.get("/favorites_playlist.php");
+        try {
+            const { data } = await backendApi.get("/favorites_playlist.php");
 
-                if (data.status === 'success') {
-                    const allTracks = rootState.playlist?.tracksByPlaylist || {};
-                    const trackMap = {};
-                    Object.values(allTracks).flat().forEach(t => {
-                        trackMap[t.id] = t;
-                    });
-                    const fullTracks = data.data?.tracks.map(t => trackMap[t.id] || t) || [];
-                    commit('setTracks', fullTracks);
-                } else {
-                    commit('setError', data.message || 'Error loading favorites');
-                    commit('setTracks', []);
-                }
-            } catch (err) {
-                commit('setError', err?.response?.data?.message || err.message || 'Server error');
-                commit('setTracks', []);
-            } finally {
-                commit('setLoading', false);
+            if (data.status === 'success') {
+            const allTracks = rootState.playlist?.tracksByPlaylist || {};
+            const trackMap = {};
+            Object.values(allTracks).flat().forEach(t => { trackMap[t.id] = t; });
+            const fullTracks = data.data?.tracks.map(t => trackMap[t.id] || t) || [];
+            commit('setFavTracks', fullTracks);
+            } else {
+            commit('setFavError', data.message || 'Error loading favorites');
+            commit('setFavTracks', []);
             }
+        } catch (err) {
+            commit('setFavError', err?.response?.data?.message || err.message || 'Server error');
+            commit('setFavTracks', []);
+        } finally {
+            commit('setFavLoading', false);
+        }
         }
     },
+
     getters: {
         favoritesTracks: (state) => state.tracksByPlaylist.favorites || [],
-        favoritesLoading: (state) => state.loading,
-        favoritesError: (state) => state.error,
+        favoritesLoading: (state) => state.favLoading,
+        favoritesError: (state) => state.favError,
     }
 };

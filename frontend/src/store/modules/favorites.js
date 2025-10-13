@@ -33,7 +33,7 @@ export default {
             }
         },
 
-        async toggleFavorite({ commit, state }, trackId) {
+        async toggleFavorite({ commit, state, dispatch }, trackId) {
             try {
                 const idStr = String(trackId);
                 const isFav = state.favorites.includes(idStr);
@@ -47,6 +47,7 @@ export default {
 
                 if (res.data.status === "success") {
                     commit("toggleFav", trackId);
+                    await dispatch("loadFavoritesPlaylist");
                 } else {
                     console.warn(`${isFav ? "Remove" : "Add"} favorite failed:`, res.data.message);
                 }

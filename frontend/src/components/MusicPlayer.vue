@@ -193,6 +193,7 @@ const toggleFav = (trackId) => {
     store.dispatch("toggleFavorite", trackId);
 };
 
+
 watch(playing, (val) => {
     if (!audio.value) return; 
     const action = val ? 'play' : 'pause';
