@@ -3,7 +3,7 @@
         <div class="container">
             <div class="header-row">
                 <div class="header-logo" v-if="route.path === '/'">
-                    <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60">
+                    <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60" fetchpriority="high">
                 </div>
                 <div class="header-logo" v-else-if="route.path === '/player'">
                     <router-link to="playlists">
@@ -43,7 +43,7 @@
                     </router-link>
                 </div>
                 <div class="header-logo" v-else>
-                    <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60">
+                    <img :src="require('@/assets/images/logo.svg')" alt="Logo" width="127" height="60" fetchpriority="high">
                 </div>
                 <div class="header-btns" v-if="isOnPlayerRoute">
                     <music-button type-btn="btn-fresh" text="Вихід" @click="logout"></music-button>

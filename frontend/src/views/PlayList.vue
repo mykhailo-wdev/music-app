@@ -26,7 +26,7 @@
                     <music-button 
                         type-btn="btn-fresh" 
                         text="Слухати" 
-                        @action="() => playPlaylist(pl.id, pl.tracks)"
+                        @action="() => playPlaylist(pl.id)"
                     ></music-button>
                     <music-button 
                         type-btn="btn-hot" 
@@ -46,7 +46,7 @@
                     {{ toUpperCaseFirstLetter(track.track_name) }} – {{ toUpperCaseFirstLetter(track.artist_name) }}
                     |
                     <button class="delete-track" @click="removeTrack(pl.id, track.id)">
-                        <img :src="require('@/assets/images/delete-icon.svg')" alt="Delete icon" width="26" height="26" fetchpriority="low">
+                        <img :src="require('@/assets/images/delete-icon.svg')" loading="lazy" alt="Delete icon" width="26" height="26" fetchpriority="low">
                     </button> 
                 </li>
             </ul>
@@ -122,7 +122,7 @@ async function fetchPlaylists() {
         await Promise.all(
             playlists.value.map(pl => store.dispatch('fetchPlaylistTracks', pl.id))
         );
-        await store.dispatch('loadFavorites');
+        await store.dispatch('loadFavoritesPlaylist');
         const map = {};
         playlists.value.forEach(pl => {
             pl.tracks?.forEach(track => {
@@ -218,7 +218,9 @@ function askDelete(id) {
 }
 
 function playPlaylist(playlistId, tracks = null) {
-    const list = tracks || tracksOf(playlistId);
+    const list = (playlistId === 'favorites')
+    ? tracksOf(playlistId) 
+    : (tracks || tracksOf(playlistId));
     if (!list.length) {
         openAlert({
             title: 'Порожній плейлист',
