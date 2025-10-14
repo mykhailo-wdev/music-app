@@ -14,7 +14,9 @@
         <music-button @click="createNewPlaylist" type-btn="btn-sky" text="Створити"></music-button>
         <p v-if="errorEmptyPlaylist" class="error">Поле не може бути пустим. Введіть назву плейлиста</p>
     </div>
-    <div v-if="loading"></div>
+    <div v-if="isLoading" class="loader-wrap">
+        <div class="loader"></div>
+    </div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else-if="allPlaylists.length > 0" class="playlists">
         <div v-for="pl in allPlaylists" :key="pl.id" class="playlist-card">
@@ -53,9 +55,7 @@
         </div>
     </div>
         <div v-else>
-            <div class="loader-wrap">
-                <div class="loader"></div>
-            </div>
+            <p>Ще немає плейлистів.</p>
         </div>
         <music-player></music-player>
     </div>
@@ -90,6 +90,9 @@ const errorStore = computed(() => store.getters.error);
 const isLoading = computed(() => loadingStore.value || pageLoading.value);
 const loading = computed(() => store.getters.loading);
 const error = computed(() => store.getters.error);
+const favoritesMeta = computed(() => store.getters['favoritesMeta']);
+const favoritesTracks = computed(() => store.getters['favoritesTracks'] || []);
+
 
 const allTracksMap = ref({});
 
@@ -116,6 +119,7 @@ function tracksOf(playlistId) {
 
 
 async function fetchPlaylists() {
+    pageLoading.value = true;
     try {
         await store.dispatch('fetchPlaylists');
         playlists.value = store.getters.playlists || [];
@@ -123,6 +127,7 @@ async function fetchPlaylists() {
             playlists.value.map(pl => store.dispatch('fetchPlaylistTracks', pl.id))
         );
         await store.dispatch('loadFavoritesPlaylist');
+        const favMeta = store.getters['favoritesMeta'];
         const map = {};
         playlists.value.forEach(pl => {
             pl.tracks?.forEach(track => {
@@ -133,14 +138,6 @@ async function fetchPlaylists() {
             map[track.id] = track;
         });
         allTracksMap.value = map;
-        allPlaylists.value = [
-            {
-                id: 'favorites',
-                name: 'Favorites',
-                tracks: store.getters['favoritesTracks'] || []
-            },
-            ...playlists.value
-        ];
 
     } catch (err) {
         openAlert({
@@ -148,6 +145,8 @@ async function fetchPlaylists() {
             description: 'Не вдалося завантажити плейлисти',
             buttons: [{ text: 'OK', typeBtn: 'btn-hot', action: closeAlert }]
         });
+    } finally {
+        pageLoading.value = false;                              
     }
 }
 
@@ -237,7 +236,21 @@ function toUpperCaseFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-const allPlaylists = ref([]);
+const allPlaylists = computed(() => {
+    if (pageLoading.value) return [];
+    return [
+        {
+            id: 'favorites',
+            name: favoritesMeta.value?.name || 'Favorites',
+            updated_at: favoritesMeta.value?.updated_at || null,
+            updated_at_local: favoritesMeta.value?.updated_at_local || null,
+            tracks: favoritesTracks.value
+        },
+        ...playlists.value
+    ];
+});
+
+
 
 onMounted(async () => {
     await fetchPlaylists();
