@@ -19,7 +19,10 @@
     </div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else-if="allPlaylists.length > 0" class="playlists">
-        <div v-for="pl in allPlaylists" :key="pl.id" class="playlist-card">
+        <div 
+            v-for="pl in allPlaylists" 
+            :key="pl.id" 
+            class="playlist-card">
             <div class="playlist-head">
                 <h4>{{ pl.name }}</h4>
                 <small>Оновлено: {{ pl.updated_at_local || pl.updated_at }}</small>
@@ -30,12 +33,17 @@
                         text="Слухати" 
                         @action="() => playPlaylist(pl.id)"
                     ></music-button>
-                    <music-button 
+                    <music-button
+                        v-if="pl.id !== 'favorites'"
                         type-btn="btn-hot" 
                         text="Видалити" 
                         @action="askDelete(pl.id)">
                     </music-button>
-                    <button @click="toggleMusicAll(pl.id)" class="more-info">
+                    <button 
+                        @click="toggleMusicAll(pl.id)" 
+                        class="more-info"
+                        v-if="pl.id !== 'favorites'"
+                    >
                         <svg width="7" height="26" viewBox="0 0 7 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M3.5 19.5C4.19223 19.5 4.86892 19.6906 5.44449 20.0477C6.02007 20.4048 6.46867 20.9124 6.73358 21.5063C6.99848 22.1001 7.0678 22.7536 6.93275 23.384C6.7977 24.0145 6.46436 24.5936 5.97487 25.0481C5.48539 25.5026 4.86175 25.8121 4.18282 25.9375C3.50388 26.063 2.80015 25.9986 2.16061 25.7526C1.52107 25.5066 0.974441 25.0901 0.589857 24.5556C0.205272 24.0211 0 23.3928 0 22.75C0 21.888 0.36875 21.0614 1.02513 20.4519C1.6815 19.8424 2.57174 19.5 3.5 19.5ZM0 3.25C0 3.89279 0.205272 4.52114 0.589857 5.0556C0.974441 5.59006 1.52107 6.00662 2.16061 6.25261C2.80015 6.49859 3.50388 6.56295 4.18282 6.43755C4.86175 6.31215 5.48539 6.00262 5.97487 5.5481C6.46436 5.09358 6.7977 4.51448 6.93275 3.88404C7.0678 3.2536 6.99848 2.60014 6.73358 2.00628C6.46867 1.41242 6.02007 0.904838 5.44449 0.547724C4.86892 0.190609 4.19223 0 3.5 0C2.57174 0 1.6815 0.34241 1.02513 0.951903C0.36875 1.5614 0 2.38805 0 3.25ZM0 13C0 13.6428 0.205272 14.2711 0.589857 14.8056C0.974441 15.3401 1.52107 15.7566 2.16061 16.0026C2.80015 16.2486 3.50388 16.313 4.18282 16.1876C4.86175 16.0621 5.48539 15.7526 5.97487 15.2981C6.46436 14.8436 6.7977 14.2645 6.93275 13.634C7.0678 13.0036 6.99848 12.3501 6.73358 11.7563C6.46867 11.1624 6.02007 10.6548 5.44449 10.2977C4.86892 9.94061 4.19223 9.75 3.5 9.75C2.57174 9.75 1.6815 10.0924 1.02513 10.7019C0.36875 11.3114 0 12.138 0 13Z" fill="black"/>
                         </svg>
@@ -47,8 +55,16 @@
                     <span>{{ idx + 1 }}.&nbsp;</span>
                     {{ toUpperCaseFirstLetter(track.track_name) }} – {{ toUpperCaseFirstLetter(track.artist_name) }}
                     <span class="vert-line">|</span>
-                    <button class="delete-track" @click="removeTrack(pl.id, track.id)">
-                        <img :src="require('@/assets/images/delete-icon.svg')" loading="lazy" alt="Delete icon" width="26" height="26" fetchpriority="low">
+                    <button 
+                        class="delete-track" 
+                        @click="removeTrack(pl.id, track.id)"
+                        >
+                        <img :src="require('@/assets/images/delete-icon.svg')" 
+                            loading="lazy" 
+                            alt="Delete icon" 
+                            width="26" 
+                            height="26" 
+                            fetchpriority="low">
                     </button> 
                 </li>
             </ul>
@@ -112,7 +128,7 @@ function toggleMusicAll(id) {
 
 function tracksOf(playlistId) {
     if (playlistId === 'favorites') {
-        return store.getters['favoritesTracks'] || [];
+        return store.getters['favoritesTracks'] || [];  
     }
     return store.getters.tracksOf(playlistId) || [];
 }
@@ -249,8 +265,6 @@ const allPlaylists = computed(() => {
         ...playlists.value
     ];
 });
-
-
 
 onMounted(async () => {
     await fetchPlaylists();
