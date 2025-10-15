@@ -44,9 +44,9 @@
             </div>
             <ul class="track-list" v-if="openPlaylistId === pl.id">
                 <li class="track-item" v-for="(track, idx) in tracksOf(pl.id)" :key="track.id">
-                    <span>{{ idx + 1 }}.</span>
+                    <span>{{ idx + 1 }}.&nbsp;</span>
                     {{ toUpperCaseFirstLetter(track.track_name) }} – {{ toUpperCaseFirstLetter(track.artist_name) }}
-                    |
+                    <span class="vert-line">|</span>
                     <button class="delete-track" @click="removeTrack(pl.id, track.id)">
                         <img :src="require('@/assets/images/delete-icon.svg')" loading="lazy" alt="Delete icon" width="26" height="26" fetchpriority="low">
                     </button> 
@@ -325,13 +325,16 @@ small {
 .delete-track {
     cursor: pointer;
     margin-left: 4px;
+    display: flex;
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
 }
 .track-list {
     padding: 0 8px;  
 }
 .track-item {
     display: flex;
-    align-items: center;
     padding: 8px;
     border-top: 1px solid var(--palette-stroke);
     @include mixins.text-small();
@@ -369,5 +372,12 @@ small {
 @keyframes l16 { 
     100%{transform: rotate(1turn)}
 }
-
+.vert-line {
+    padding-left: 4px;
+}
+@media (max-width: 768px) {
+    .vert-line {
+        display: none;
+    }
+}
 </style>
