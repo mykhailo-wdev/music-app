@@ -29,28 +29,28 @@ export default {
             const { data } = await backendApi.get("/favorites_playlist.php");
 
             if (data.status === 'success') {
-            const allTracks = rootState.playlist?.tracksByPlaylist || {};
-            const trackMap = {};
-            Object.values(allTracks).flat().forEach(t => { trackMap[t.id] = t; });
-            const fullTracks = data.data?.tracks.map(t => trackMap[t.id] || t) || [];
-            commit('setFavTracks', fullTracks);
-            commit('setFavMeta', {
-                name: data.data?.name || 'Favorites',
-                updated_at: data.data?.updated_at || null,
-                updated_at_local: data.data?.updated_at_local || null,
-            });
+                const allTracks = rootState.playlist?.tracksByPlaylist || {};
+                const trackMap = {};
+                Object.values(allTracks).flat().forEach(t => { trackMap[t.id] = t; });
+                const fullTracks = data.data?.tracks.map(t => trackMap[t.id] || t) || [];
+                commit('setFavTracks', fullTracks);
+                commit('setFavMeta', {
+                    name: data.data?.name || 'Favorites',
+                    updated_at: data.data?.updated_at || null,
+                    updated_at_local: data.data?.updated_at_local || null,
+                });
             } else {
-            commit('setFavError', data.message || 'Error loading favorites');
-            commit('setFavTracks', []);
-            commit('setFavMeta', null);
+                commit('setFavError', data.message || 'Error loading favorites');
+                commit('setFavTracks', []);
+                commit('setFavMeta', null);
             }
-        } catch (err) {
-            commit('setFavError', err?.response?.data?.message || err.message || 'Server error');
-            commit('setFavTracks', []);
-            commit('setFavMeta', null);
-        } finally {
-            commit('setFavLoading', false);
-        }
+            } catch (err) {
+                commit('setFavError', err?.response?.data?.message || err.message || 'Server error');
+                commit('setFavTracks', []);
+                commit('setFavMeta', null);
+            } finally {
+                commit('setFavLoading', false);
+            }
         }
     },
 
