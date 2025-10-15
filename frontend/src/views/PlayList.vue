@@ -19,7 +19,10 @@
     </div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else-if="allPlaylists.length > 0" class="playlists">
-        <div v-for="pl in allPlaylists" :key="pl.id" class="playlist-card">
+        <div 
+            v-for="pl in allPlaylists" 
+            :key="pl.id" 
+            class="playlist-card">
             <div class="playlist-head">
                 <h4>{{ pl.name }}</h4>
                 <small>Оновлено: {{ pl.updated_at_local || pl.updated_at }}</small>
@@ -125,7 +128,7 @@ function toggleMusicAll(id) {
 
 function tracksOf(playlistId) {
     if (playlistId === 'favorites') {
-        return store.getters['favoritesTracks'] || [];
+        return store.getters['favoritesTracks'] || [];  
     }
     return store.getters.tracksOf(playlistId) || [];
 }
