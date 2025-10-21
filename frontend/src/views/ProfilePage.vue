@@ -4,19 +4,19 @@
             <section class="profile">
                 <div class="profile-wrap">
                     <div class="profile-layout">
-                        <h3>Vincent Sharp 55</h3>
-                        <a href="mailto:mikhail_l@stackcraft.tech" class="text-main user-email">mikhail322@gmail.com</a>
+                        <h3>{{ user?.name }}</h3>
+                        <a :href="`mailto:${user?.email}`" class="text-main user-email">{{ user?.email }}</a>
                         <ul class="user-data">
                             <li class="user-qty-folders">
-                                <h4>50</h4>
+                                <h4>{{ playlistCount }}</h4>
                                 <p class="text-main">Папок</p>
                             </li>
                             <li class="user-qty-tracks">
-                                <h4>44</h4>
+                                <h4>{{ tracksCount }}</h4>
                                 <p class="text-main">Треків</p>
                             </li>
                             <li class="user-qty-favorites">
-                                <h4>20</h4>
+                                <h4>{{ favoritesCount }}</h4>
                                 <p class="text-main">Улюблених</p>
                             </li>
                         </ul>
@@ -33,7 +33,23 @@
 <script setup>
 import MusicHeader from '@/components/MusicHeader.vue';
 import MusicButton from '@/components/MusicButton.vue';
+import { onMounted } from 'vue';
+import { useUser } from '@/composables/useUser';
+import { useUserPlaylists } from "@/composables/useUserPlaylists";
+import { useUserTracks } from '@/composables/useUserTracks';
+import { useUserFavorites } from '@/composables/useUserFavorites';
 
+
+const { user, loading, error } = useUser();
+const { playlistCount, fetchPlaylistCount } = useUserPlaylists();
+const { tracksCount, fetchTrackCount } = useUserTracks();
+const { favoritesCount, fetchFavoritesCount } = useUserFavorites();
+
+onMounted(() => {
+    fetchPlaylistCount();
+    fetchTrackCount();
+    fetchFavoritesCount();
+});
 </script>
 
 <style lang="scss" scoped>
