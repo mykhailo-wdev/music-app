@@ -9,7 +9,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-
+use Dotenv\Dotenv;
+$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
 
 // --- Отримуємо email із запиту ---
 $data = json_decode(file_get_contents("php://input"), true);
@@ -51,23 +53,22 @@ $stmt->execute([$user['id'], $token, $expires]);
 $resetLink = "http://localhost:5173/reset-password?token=$token";
 
 
-$mail = new PHPMailer(true);
-
 try {
+    $mail = new PHPMailer(true);
     $mail->isSMTP();
     $mail->SMTPDebug = 0; 
     $mail->Debugoutput = 'html';
-    $mail->Host       = 'smtp.ukr.net';
+    $mail->Host       = $_ENV['SMTP_HOST'];
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'everestads@ukr.net'; 
-    $mail->Password   = 'oT5AlM245gZwItm9';   
-    $mail->SMTPSecure = 'ssl';
-    $mail->Port       = 465;
+    $mail->Username   = $_ENV['SMTP_USERNAME'];
+    $mail->Password   = $_ENV['SMTP_PASSWORD'];
+    $mail->SMTPSecure = $_ENV['SMTP_SECURE'];
+    $mail->Port       = (int)$_ENV['SMTP_PORT'];
 
     $mail->CharSet = 'UTF-8';
     $mail->Encoding = 'base64';
 
-    $mail->setFrom('everestads@ukr.net', 'Music App');
+    $mail->setFrom($_ENV['SMTP_FROM_EMAIL'], $_ENV['SMTP_FROM_NAME']);
     $mail->addAddress($email);
 
     $mail->isHTML(true);

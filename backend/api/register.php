@@ -9,6 +9,10 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use Firebase\JWT\JWT;
 
+use Dotenv\Dotenv;
+$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
+
 $data = json_decode(file_get_contents("php://input"), true);
 if (!$data) {
     echo json_encode(["status" => "error", "message" => "Не отримано JSON або некоректний JSON"]);
@@ -62,19 +66,19 @@ $verificationToken = JWT::encode($payload, $secret_key, 'HS256');
 $verifyLink = "http://localhost:5173/verify-email?token=$verificationToken";
 
 // Надсилаємо лист
-$mail = new PHPMailer(true);
 try {
+    $mail = new PHPMailer(true);
     $mail->isSMTP();
-    $mail->Host       = 'smtp.ukr.net';
+    $mail->Host       = $_ENV['SMTP_HOST'];
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'everestads@ukr.net';
-    $mail->Password   = 'oT5AlM245gZwItm9';
-    $mail->SMTPSecure = 'ssl';
-    $mail->Port       = 465;
+    $mail->Username   = $_ENV['SMTP_USERNAME'];
+    $mail->Password   = $_ENV['SMTP_PASSWORD'];
+    $mail->SMTPSecure = $_ENV['SMTP_SECURE'];
+    $mail->Port       = (int)$_ENV['SMTP_PORT'];
     $mail->CharSet    = 'UTF-8';
     $mail->Encoding   = 'base64';
 
-    $mail->setFrom('everestads@ukr.net', 'Music App');
+    $mail->setFrom($_ENV['SMTP_FROM_EMAIL'], $_ENV['SMTP_FROM_NAME']);
     $mail->addAddress($email);
     $mail->isHTML(true);
     $mail->Subject = 'Підтвердження email';
