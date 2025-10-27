@@ -254,17 +254,19 @@ function toUpperCaseFirstLetter(str) {
 
 const allPlaylists = computed(() => {
     if (pageLoading.value) return [];
-    return [
-        {
+    const list = [];
+    if (favoritesTracks.value && favoritesTracks.value.length > 0) {
+        list.push({
             id: 'favorites',
             name: favoritesMeta.value?.name || 'Favorites',
             updated_at: favoritesMeta.value?.updated_at || null,
             updated_at_local: favoritesMeta.value?.updated_at_local || null,
             tracks: favoritesTracks.value
-        },
-        ...playlists.value
-    ];
+        });
+    }
+    return [...list, ...playlists.value];
 });
+
 
 onMounted(async () => {
     await fetchPlaylists();
