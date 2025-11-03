@@ -56,6 +56,10 @@
                     <music-button type-btn="btn-fresh" text="Вихід" @click="logout"></music-button>
                     <music-button type-btn="btn-sky" text="Назад в плеєр" to="/player"></music-button>
                 </div>
+                <div class="header-btns" v-else-if="isOnPrivacyRoute">
+                    <music-button type-btn="btn-fresh" text="Вихід" @click="logout"></music-button>
+                    <music-button type-btn="btn-sky" text="Профіль" to="/profile"></music-button>
+                </div>
                 <div class="header-btns" v-else>
                     <music-button type-btn="btn-fresh" text="Вхід" to="/login"></music-button>
                     <music-button type-btn="btn-sky" text="Реєстрація" to="/register"></music-button>
@@ -85,6 +89,10 @@ const isOnProfileRoute = computed(() => {
 
 const isOnPlayListsRoute = computed(() => {
     return route.path.startsWith('/playlists');
+});
+
+const isOnPrivacyRoute = computed(() => {
+    return route.path.startsWith('/privacy-policy');
 });
 
 async function logout() {

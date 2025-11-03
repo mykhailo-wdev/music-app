@@ -63,7 +63,7 @@ const router =  createRouter({
         {
             path: '/privacy-policy',
             component: PrivacyPolicy,
-            meta: { title: 'Політика конфіденційності - Pulsebox', guestOnly: true }
+            meta: { title: 'Політика конфіденційності - Pulsebox' }
         },
         {   path: '/:pathMatch(.*)*', 
             name: 'NotFound', 
