@@ -238,8 +238,11 @@ function closeAlert() {
 }
 @media(max-width: 576px) {
     .search-wrap {
-        .search-row {
+        .search-row, .body-text {
             margin-top: 0;
+        }
+        .body-text {
+            margin-top: 0 !important;
         }
     }
 }
