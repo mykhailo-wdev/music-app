@@ -9,6 +9,7 @@ import ProfilePage from "./views/ProfilePage.vue";
 import ResetPassword from "./views/ResetPassword.vue";
 import VerifyEmail from "./views/VerifyEmail.vue";
 import PlayList from "./views/PlayList.vue";
+import PrivacyPolicy from "./views/PrivacyPolicy.vue";
 import store from "./store";
 
 const router =  createRouter({
@@ -58,6 +59,11 @@ const router =  createRouter({
             path: '/playlists',
             component: PlayList,
             meta: { title: 'Плейлисти - Pulsebox', requiresAuth: true }
+        },
+        {
+            path: '/privacy-policy',
+            component: PrivacyPolicy,
+            meta: { title: 'Політика конфіденційності - Pulsebox', guestOnly: true }
         },
         {   path: '/:pathMatch(.*)*', 
             name: 'NotFound', 

@@ -477,6 +477,5 @@ onMounted(async () => {
         mask-repeat: no-repeat;
         mask-size: 100% 100%;
     }
-
 }
 </style>
